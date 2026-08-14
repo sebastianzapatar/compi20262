@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatCompiler | Masterclass del Intérprete</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #38bdf8;
+            --accent: #f472b6;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --sidebar-width: 280px;
+            --success: #22c55e;
+            --warning: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .cat-mascot {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 0.8rem;
+            white-space: pre;
+            margin: 10px 0;
+        }
+
+        nav ul {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        nav ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        nav ul li a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: block;
+            padding: 0.5rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        nav ul li a:hover, nav ul li a.active {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        .content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 3rem 5rem;
+            max-width: 1200px;
+        }
+
+        .hero {
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            border-bottom: 2px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 0.5rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .glass {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 1rem 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        pre {
+            padding: 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .highlight-card {
+            border-left: 4px solid var(--accent);
+        }
+
+        .info-card {
+            border-left: 4px solid var(--primary);
+        }
+
+        ul.feature-list {
+            list-style-type: none;
+        }
+
+        ul.feature-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        ul.feature-list li::before {
+            content: '👉';
+            position: absolute;
+            left: 0;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; }
+            .content { margin-left: 0; padding: 2rem; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>CatCompiler</h1>
+            <div class="cat-mascot">
+  /\_/\  
+ ( o.o ) 
+  > ^ <  
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">con Limón el Gato</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#intro" class="active">1. ¿Qué es un Intérprete?</a></li>
+                <li><a href="#architecture">2. Arquitectura General</a></li>
+                <li><a href="#lexer">3. El Lexer y los Tokens</a></li>
+                <li><a href="#ast">4. El Parser y el AST</a></li>
+                <li><a href="#evaluator">5. El Evaluador</a></li>
+                <li><a href="#repl">6. Consola REPL</a></li>
+                <li><a href="#modules">7. Estructura de Módulos</a></li>
+            </ul>
+        </nav>
+        <div style="margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+            Curso de Compiladores
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+        <header class="hero">
+            <h1>Construyendo un Intérprete desde Cero</h1>
+            <p>Descubre las entrañas de los lenguajes de programación creando el tuyo propio usando Go. Todo explicado de forma clara para que no te pierdas en el código.</p>
+        </header>
+
+        <section id="intro" class="section">
+            <h2>1. ¿Qué es un Intérprete?</h2>
+            <div class="card glass">
+                <h3>El Traductor de Código</h3>
+                <p>Un intérprete es un programa informático capaz de analizar y ejecutar otros programas. A diferencia de un compilador (que traduce todo el código a lenguaje máquina antes de ejecutarlo), el intérprete traduce y ejecuta el código línea por línea o instrucción por instrucción.</p>
+                <p style="margin-top: 1rem;">Lenguajes muy famosos como <strong>Python</strong>, <strong>JavaScript</strong> y <strong>Ruby</strong> funcionan mediante intérpretes por debajo. Construir el nuestro nos enseñará cómo las computadoras realmente entienden el texto que escribimos.</p>
+            </div>
+        </section>
+
+        <section id="architecture" class="section">
+            <h2>2. Arquitectura General</h2>
+            <p style="margin-bottom: 1.5rem;">Todo el viaje del código fuente desde texto plano hasta su ejecución se divide en una "tubería" (pipeline) de tres fases fuertemente conectadas.</p>
+            
+            <div class="grid-2">
+                <div class="card info-card">
+                    <h3 style="color: var(--primary);">El Flujo de Vida</h3>
+                    <ol style="margin-left: 1.5rem;">
+                        <li style="margin-bottom: 0.5rem;"><strong>Lexer:</strong> Recibe texto y escupe Tokens.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Parser:</strong> Recibe Tokens y escupe un Árbol (AST).</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Evaluador:</strong> Recorre el Árbol y ejecuta las acciones (suma, resta, asignación).</li>
+                    </ol>
+                </div>
+                <div class="card highlight-card">
+                    <h3 style="color: var(--accent);">¿Por qué separar las fases?</h3>
+                    <p>¡Para mantener la cordura! Intentar evaluar el código directamente desde el texto plano implicaría lidiar con espacios, saltos de línea y precedencia matemática todo al mismo tiempo. Al dividirlo, cada parte hace <strong>una sola cosa muy bien</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="lexer" class="section">
+            <h2>3. El Lexer (Análisis Léxico) y los Tokens</h2>
+            
+            <div class="card glass">
+                <h3>Transformando texto en significado</h3>
+                <p>El código fuente no es más que una cadena larga de caracteres. El trabajo del Lexer es leer esa cadena, carácter por carácter, e identificar qué partes forman "palabras" con significado. A estas palabras las llamamos <strong>Tokens</strong>.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Entrada (Código Fuente)</h3>
+                    <div class="code-block"><pre><code class="language-javascript">let edad = 5;</code></pre></div>
+                    <p style="font-size: 0.9rem; margin-top: 1rem; color: var(--text-muted);">El lexer ignora los espacios en blanco de forma automática para simplificar el proceso posterior.</p>
+                </div>
+                <div class="card">
+                    <h3>Salida (Lista de Tokens)</h3>
+                    <div class="code-block"><pre><code class="language-go">[
+  {Type: LET, Literal: "let"},
+  {Type: IDENT, Literal: "edad"},
+  {Type: ASSIGN, Literal: "="},
+  {Type: INT, Literal: "5"},
+  {Type: SEMICOLON, Literal: ";"}
+]</code></pre></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ast" class="section">
+            <h2>4. El Parser y el Árbol de Sintaxis Abstracta (AST)</h2>
+            <p style="margin-bottom: 1.5rem;">Tener una lista de Tokens está muy bien, pero una lista plana no tiene estructura. Necesitamos entender quién depende de quién.</p>
+
+            <div class="card glass highlight-card">
+                <h3>¿Qué es el AST?</h3>
+                <p>El Abstract Syntax Tree es una estructura de datos jerárquica (un árbol en programación) que representa de forma precisa la estructura lógica del código. "Abstracta" porque omite detalles sintácticos irrelevantes como llaves, puntos y comas o paréntesis (el árbol en sí mismo ya da el orden jerárquico).</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>¿Qué hace el Parser?</h3>
+                    <ul class="feature-list">
+                        <li>Consume la lista de tokens generada por el Lexer.</li>
+                        <li>Verifica que la gramática sea correcta. (¡Aquí es donde te da el famoso Error de Sintaxis si olvidas cerrar un paréntesis!).</li>
+                        <li>Aplica la <strong>precedencia de operadores</strong>. Sabe que en <code>5 + 5 * 2</code>, la multiplicación va primero y debe estar más abajo en el árbol.</li>
+                    </ul>
+                </div>
+                <div class="card info-card">
+                    <h3>Ejemplo de Árbol</h3>
+                    <p style="font-size: 0.9rem;">Para la sentencia <code>let x = 10;</code>, el AST se vería así:</p>
+                    <div class="code-block"><pre><code class="language-json">LetStatement {
+  Name: Identifier("x"),
+  Value: IntegerLiteral(10)
+}</code></pre></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluator" class="section">
+            <h2>5. El Evaluador y el Entorno</h2>
+            
+            <div class="card glass">
+                <h3>Haciendo que la magia ocurra</h3>
+                <p>Una vez que tenemos nuestro hermoso Árbol AST, necesitamos recorrerlo. El Evaluador es una función recursiva que visita cada nodo del árbol, de abajo hacia arriba, calculando resultados.</p>
+                
+                <h3 style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--primary);">El Entorno (Environment)</h3>
+                <p>Para manejar variables como <code>let a = 10;</code>, el evaluador necesita memoria. El "Environment" es simplemente un Diccionario (un mapa/hashmap en Go) que guarda asociaciones de nombres y valores.</p>
+                <div class="code-block"><pre><code class="language-go">// Así se ve conceptualmente el Entorno:
+map[string]Object {
+  "x": IntegerObject(10),
+  "y": BooleanObject(true),
+}</code></pre></div>
+            </div>
+        </section>
+
+        <section id="repl" class="section">
+            <h2>6. La Consola Interactiva (REPL)</h2>
+            
+            <div class="card">
+                <h3>Read, Eval, Print, Loop</h3>
+                <p>El REPL es el programa principal que unifica todas las piezas. Funciona en un ciclo infinito:</p>
+                <ul class="feature-list" style="margin-top: 1rem;">
+                    <li><strong>Read:</strong> Lee lo que el usuario escribe en la consola.</li>
+                    <li><strong>Eval:</strong> Le pasa el texto al Lexer, luego al Parser, y finalmente al Evaluator.</li>
+                    <li><strong>Print:</strong> Imprime el Objeto resultante en la pantalla para que el usuario lo vea.</li>
+                    <li><strong>Loop:</strong> Imprime el prompt <code>>></code> y vuelve a esperar.</li>
+                </ul>
+            </div>
+            
+            <div class="card info-card mt-2">
+                <h3>¡Limón te espera!</h3>
+                <p>En CatCompiler, Limón el gato es tu anfitrión en el REPL. Él se asegura de que tus tokens sean procesados y te acompaña cuando ejecutas <code>go run main.go</code>.</p>
+            </div>
+        </section>
+
+        <section id="modules" class="section">
+            <h2>7. Estructura de Módulos (Go)</h2>
+            <p style="margin-bottom: 1.5rem;">Así es como se conectan las carpetas y paquetes de nuestro proyecto a nivel de código.</p>
+            
+            <div class="card glass" style="text-align: center;">
+                <div class="mermaid">
+                    graph TD
+                    M[main.go] -->|Inicia| R[repl]
+                    R -->|Crea| L[lexer]
+                    R -->|Crea| P[parser]
+                    R -->|Llama a| E[evaluator]
+                    
+                    L -.->|Usa| T[token]
+                    P -.->|Usa| L
+                    P -.->|Genera| A[ast]
+                    E -.->|Lee| A
+                    E -.->|Retorna| O[object]
+                    
+                    classDef default fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+                </div>
+            </div>
+            
+            <div class="grid-2 mt-2" style="margin-top: 1.5rem;">
+                <div class="card info-card">
+                    <h3 style="color: var(--primary);">Paquetes de Datos</h3>
+                    <ul class="feature-list" style="font-size: 0.9rem;">
+                        <li><strong>token:</strong> Las "palabras" base (ej. <code>LET</code>, <code>INT</code>). Es el bloque más pequeño. No depende de nadie.</li>
+                        <li><strong>ast:</strong> El Árbol de Sintaxis Abstracta (ej. <code>LetStatement</code>, <code>IfExpression</code>). Representa la estructura de lo que programamos.</li>
+                        <li><strong>object:</strong> El Sistema de Tipos real del evaluador (ej. Objetos que guardan números enteros o booleanos en memoria).</li>
+                    </ul>
+                </div>
+                <div class="card highlight-card">
+                    <h3 style="color: var(--accent);">Paquetes Activos (Motores)</h3>
+                    <ul class="feature-list" style="font-size: 0.9rem;">
+                        <li><strong>lexer:</strong> Transforma un <code>string</code> en elementos del paquete <code>token</code>.</li>
+                        <li><strong>parser:</strong> Toma los tokens generados por el <code>lexer</code> y ensambla la estructura definida en <code>ast</code>.</li>
+                        <li><strong>evaluator:</strong> Recorre el <code>ast</code>, realiza los cálculos reales y genera resultados del tipo <code>object</code>.</li>
+                        <li><strong>repl / main:</strong> Orquestan el show. Toman el texto, lo pasan al lexer, luego al parser, y finalmente al evaluador.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({startOnLoad:true, theme: 'dark'});
+        hljs.highlightAll();
+
+        // Simple smooth scrolling for sidebar links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                window.scrollTo({
+                    top: targetSection.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+                
+                // Update active state
+                document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
