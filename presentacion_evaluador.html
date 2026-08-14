@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatCompiler | Guía del Evaluador</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #f59e0b;
+            --accent: #10b981;
+            --info: #3b82f6;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            border-bottom: 2px solid rgba(245, 158, 11, 0.2);
+            padding-bottom: 0.5rem;
+            margin: 3rem 0 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem;
+            color: var(--text-main);
+        }
+
+        p { margin-bottom: 1rem; color: var(--text-muted); }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+
+        .code-block {
+            background: #0d1117;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        pre {
+            padding: 1.2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .badge-accent { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
+        .badge-primary { background: rgba(245, 158, 11, 0.2); color: var(--primary); }
+
+        .tree-traversal {
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            background: rgba(255,255,255,0.02); padding: 2rem; border-radius: 12px;
+        }
+        .node {
+            background: var(--info); color: white;
+            padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: bold;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+        }
+        .node-leaf { background: var(--accent); box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .arrow { color: var(--text-muted); font-size: 1.5rem; }
+
+        .env-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .env-table th { text-align: left; padding: 0.8rem; background: rgba(255,255,255,0.05); color: var(--primary); }
+        .env-table td { padding: 0.8rem; border-bottom: 1px solid var(--border-subtle); font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; }
+
+        .terminal {
+            background: #000;
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #4ade80;
+            border: 1px solid #333;
+        }
+        .terminal span.prompt { color: #facc15; }
+        .terminal span.cmd { color: #fff; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>⚡ El Evaluador</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; margin: 0 auto;">El corazón de CatCompiler. Aquí es donde el código cobra vida, la memoria se asigna y las matemáticas se resuelven.</p>
+    </header>
+
+    <div class="card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(16, 185, 129, 0.1)); border-color: var(--primary);">
+        <h3 style="margin-top: 0; color: var(--primary);">¿Qué es el Evaluador?</h3>
+        <p>El Parser nos entregó un Árbol (AST) que describe <em>qué</em> queremos hacer. El Evaluador es el motor que <strong>recorre ese árbol y ejecuta las instrucciones</strong> reales en la computadora.</p>
+        <p>Utiliza una función recursiva llamada <code>Eval()</code> que evalúa los nodos de abajo hacia arriba: primero resuelve los hijos, y luego usa esos resultados para resolver al padre.</p>
+    </div>
+
+    <!-- ======================= SECTION 1: SISTEMA DE OBJETOS ======================= -->
+    <h2>1. El Sistema de Objetos (Los Valores)</h2>
+    <p>En CatCompiler, todo lo que produce el Evaluador es un "Objeto". Cuando escribimos <code>5</code>, el Parser lo ve como un nodo del árbol, pero el Evaluador lo convierte en un objeto <code>Integer</code> real en memoria.</p>
+
+    <div class="grid-3">
+        <div class="card" style="padding: 1.5rem;">
+            <span class="badge badge-info">Integer</span>
+            <h3>Números</h3>
+            <p>Representa valores enteros usando <code>int64</code> de Go.</p>
+            <code>Value: 42</code>
+        </div>
+        <div class="card" style="padding: 1.5rem;">
+            <span class="badge badge-accent">Boolean</span>
+            <h3>Lógica</h3>
+            <p>Representa verdadero o falso (<code>true</code>/<code>false</code>).</p>
+            <code>Value: true</code>
+        </div>
+        <div class="card" style="padding: 1.5rem;">
+            <span class="badge badge-primary">Function</span>
+            <h3>Funciones</h3>
+            <p>Guardan parámetros, cuerpo y su <em>Environment</em> (Closures).</p>
+        </div>
+    </div>
+
+    <!-- ======================= SECTION 2: EL ENVIRONMENT ======================= -->
+    <h2>2. El Environment (La Memoria y Variables)</h2>
+    <p>Para que existan las variables, necesitamos guardar nombres en la memoria de alguna forma. El <strong>Environment</strong> es básicamente un Diccionario (o Hash Map) que asocia un "nombre" (String) con un "valor" (Objeto).</p>
+
+    <div class="card">
+        <h3><code>let edad = 20;</code></h3>
+        <p>Al ejecutar esto, el Evaluador llama a <code>env.Set("edad", Integer(20))</code>.</p>
+        <table class="env-table">
+            <tr><th>Llave (Nombre)</th><th>Valor en Memoria (Objeto)</th></tr>
+            <tr><td>"edad"</td><td><code>Integer{Value: 20}</code></td></tr>
+            <tr><td>"activo"</td><td><code>Boolean{Value: true}</code></td></tr>
+            <tr><td>"sumar"</td><td><code>Function{Params: [a, b], Body: ...}</code></td></tr>
+        </table>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--info);">
+        <h3>🌍 Scopes (Alcance de Variables)</h3>
+        <p>Si declaramos una variable dentro de un <code>if</code> o una función, no debería "ensuciar" las variables de afuera. Para esto, los Environments tienen un <strong>puntero "outer" (padre)</strong>.</p>
+        <p>Cuando la función termina, su Environment "hijo" se destruye, pero el padre sigue intacto. Así se logra el Scope local.</p>
+    </div>
+
+    <!-- ======================= SECTION 3: CÓMO EVALÚA ======================= -->
+    <h2>3. ¿Cómo funciona Eval() paso a paso?</h2>
+    <p>Veamos cómo el evaluador resuelve la expresión: <code>5 + 3</code></p>
+
+    <div class="tree-traversal">
+        <div class="node">Eval( InfixExpression(+) )</div>
+        <div class="arrow">↓ (Llama a evaluar la Izquierda)</div>
+        <div class="node node-leaf">Eval( IntegerLiteral(5) )  👉 Retorna: Integer(5)</div>
+        <div class="arrow">↓ (Llama a evaluar la Derecha)</div>
+        <div class="node node-leaf">Eval( IntegerLiteral(3) )  👉 Retorna: Integer(3)</div>
+        <div class="arrow">↓ (Suma ambos Objetos)</div>
+        <div class="node" style="background: var(--primary);">Resultado Final: Integer(8)</div>
+    </div>
+
+    <!-- ======================= SECTION 4: ¿CÓMO SE CORRE? ======================= -->
+    <h2>4. ¿Cómo Correr CatCompiler?</h2>
+    <p>CatCompiler tiene <strong>dos formas</strong> de ejecutarse: de forma interactiva (REPL) o leyendo un archivo completo.</p>
+
+    <div class="grid-2">
+        <div class="card">
+            <h3 style="margin-top:0;">🕹️ Consola Interactiva (REPL)</h3>
+            <p>Ideal para probar líneas rápidas de código.</p>
+            <div class="terminal">
+                <span class="prompt">$</span> <span class="cmd">go run main.go</span><br>
+                <br>
+                Selecciona el modo de interacción:<br>
+                1. Modo Lexer<br>
+                2. Modo Parser<br>
+                3. Modo Evaluador<br>
+                Opción [1, 2 o 3]: <span class="cmd">3</span><br>
+                <br>
+                >> <span class="cmd">let x = 5 * 5;</span><br>
+                >> <span class="cmd">x;</span><br>
+                25<br>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">📄 Correr un Archivo (.limon)</h3>
+            <p>Ideal para escribir programas grandes con ciclos, ifs y funciones matemáticas como Factorial o Fibonacci.</p>
+            <div class="terminal">
+                <span class="prompt">$</span> <span class="cmd">go run main.go main.limon</span><br>
+                <br>
+                🐾 Ejecutando main.limon...<br>
+                120
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="border-top: 4px solid var(--accent); background: #111827;">
+        <h3 style="color: var(--accent); margin-top: 0;">💻 Ejemplo Práctico: main.limon</h3>
+        <p>Prueba crear un archivo <code>main.limon</code> con el siguiente código:</p>
+        <div class="code-block"><pre><code class="language-javascript">let factorial = function(n) {
+  if (n == 0) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+};
+
+// Evaluamos el factorial de 5
+let resultado = factorial(5);
+
+// El evaluador imprimirá el resultado de la última línea
+resultado; 
+</code></pre></div>
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>
