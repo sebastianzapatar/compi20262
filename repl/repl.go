@@ -25,7 +25,7 @@ func Start(in io.Reader, out io.Writer) {
 		
 		cleanedLine := strings.TrimSpace(strings.ToLower(line))
 		if cleanedLine == "exit" || cleanedLine == "salir" {
-			fmt.Fprintf(out, "¡Nos vemos! Saliendo de CompiGo...\n")
+			fmt.Fprintf(out, "¡Miau! Nos vemos. Saliendo de CatCompiler...\n")
 			return
 		}
 

@@ -14,14 +14,14 @@ func main() {
 	}
 	fmt.Printf("********************************************\n")
 	fmt.Printf("**                                        **\n")
-	fmt.Printf("**    -- BIENVENIDO A COMPIGO REPL --     **\n")
+	fmt.Printf("**  -- BIENVENIDO A CATCOMPILER REPL --   **\n")
 	fmt.Printf("**                                        **\n")
-	fmt.Printf("**      (  •_•)                           **\n")
-	fmt.Printf("**      / >[TOKENS]                       **\n")
-	fmt.Printf("**      ¡Hora de compilar sin llorar!     **\n")
+	fmt.Printf("**      /\\_/\\     ¡Miau! Soy Limón,       **\n")
+	fmt.Printf("**     ( o.o )    tu asistente felino.    **\n")
+	fmt.Printf("**      > ^ <     ¡Dame esos tokens!      **\n")
 	fmt.Printf("**                                        **\n")
 	fmt.Printf("********************************************\n\n")
-	fmt.Printf("¡Hola %s! Estás en el lenguaje de programación CompiGo.\n",
+	fmt.Printf("¡Hola %s! Estás en CatCompiler.\n",
 		user.Username)
 	fmt.Printf("Escribe algún comando y deja que la magia ocurra...\n")
 	repl.Start(os.Stdin, os.Stdout)

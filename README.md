@@ -1,6 +1,6 @@
-# CompiGo
+# CatCompiler 🐾
 
-CompiGo es un intérprete escrito en Go. Actualmente se encuentra en su primera fase de desarrollo, la cual incluye el análisis léxico (Lexer) y un entorno interactivo de lectura-evaluación-impresión (REPL).
+**CatCompiler** es un intérprete escrito en Go donde **Limón** 🐈, nuestro gato protagonista, te acompaña en la aventura de compilar código. Actualmente se encuentra en su primera fase de desarrollo, la cual incluye el análisis léxico (Lexer) y un entorno interactivo de lectura-evaluación-impresión (REPL).
 
 ## Características Actuales
 
