@@ -2,6 +2,8 @@ package lexer
 
 import "compigo/token"
 
+// Lexer representa el analizador léxico.
+// Mantiene el estado del código fuente que se está analizando.
 type Lexer struct {
 	input        string
 	position     int  // current position in input (points to current char)
@@ -9,12 +11,16 @@ type Lexer struct {
 	ch           byte // current char under examination
 }
 
+// New inicializa un nuevo Lexer con el código fuente proporcionado como entrada.
+// Llama a readChar() por primera vez para inicializar los punteros.
 func New(input string) *Lexer {
 	l := &Lexer{input: input}
 	l.readChar()
 	return l
 }
 
+// readChar avanza los punteros (position y readPosition) y actualiza
+// el carácter actual (ch). Si llega al final de la entrada, asigna 0 (NUL) a ch.
 func (l *Lexer) readChar() {
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
@@ -25,6 +31,8 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
+// NextToken evalúa el carácter actual, crea el token correspondiente,
+// avanza los punteros y retorna el token resultante.
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -98,12 +106,16 @@ func (l *Lexer) NextToken() token.Token {
 	return tok
 }
 
+// skipWhitespace ignora cualquier espacio en blanco, tabulación o salto de línea
+// avanzando los punteros hasta encontrar un carácter válido.
 func (l *Lexer) skipWhitespace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		l.readChar()
 	}
 }
 
+// readIdentifier lee de manera secuencial los caracteres mientras sean letras.
+// Retorna la palabra completa formada por esas letras.
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
@@ -112,10 +124,14 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position]
 }
 
+// isLetter verifica si un carácter es una letra o un guión bajo.
+// Esto permite que los identificadores puedan contener cosas como 'mi_variable'.
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+// readNumber lee de manera secuencial los caracteres mientras sean dígitos.
+// Retorna el número completo como string.
 func (l *Lexer) readNumber() string {
 	position := l.position
 	for isDigit(l.ch) {
@@ -124,10 +140,13 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
+// isDigit verifica si el carácter actual es un número entre 0 y 9.
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }
 
+// peekChar "espía" el siguiente carácter en la entrada sin avanzar los punteros.
+// Es útil para operadores de dos caracteres como '==' o '!='.
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -136,6 +155,7 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
+// newToken es una función auxiliar para crear e instanciar un Token rápidamente.
 func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
