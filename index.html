@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatCompiler | Guía Completa del Intérprete</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-alt: #162032;
+            --primary: #38bdf8;
+            --accent: #f472b6;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --sidebar-width: 290px;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+
+        /* ============ SIDEBAR ============ */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border-right: 1px solid var(--border-subtle);
+            position: fixed;
+            height: 100vh;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .logo { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid var(--border-subtle); }
+        .logo h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+        .cat-mascot {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent); font-size: 0.75rem;
+            white-space: pre; margin: 8px 0;
+        }
+
+        nav ul { list-style: none; }
+        nav ul li { margin-bottom: 0.3rem; }
+        nav ul li a {
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.9rem; font-weight: 500;
+            display: block; padding: 0.5rem 0.8rem;
+            border-radius: 8px; transition: all 0.2s;
+        }
+        nav ul li a:hover, nav ul li a.active {
+            background: rgba(56, 189, 248, 0.1); color: var(--primary);
+        }
+        .nav-separator {
+            border: none; border-top: 1px solid var(--border-subtle);
+            margin: 0.8rem 0;
+        }
+
+        /* ============ MAIN CONTENT ============ */
+        .content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1; padding: 3rem 4.5rem;
+            max-width: 1100px;
+        }
+
+        .hero { margin-bottom: 3rem; }
+        .hero h1 { font-size: 2.8rem; margin-bottom: 0.8rem; font-weight: 800; line-height: 1.2; }
+        .hero p { font-size: 1.15rem; color: var(--text-muted); max-width: 700px; }
+
+        .section { margin-bottom: 3.5rem; }
+        .section h2 {
+            font-size: 1.8rem; margin-bottom: 1.2rem; color: var(--primary);
+            border-bottom: 2px solid rgba(56, 189, 248, 0.15); padding-bottom: 0.5rem;
+        }
+        .section h3 { margin-bottom: 0.8rem; font-size: 1.15rem; }
+        .section p { margin-bottom: 1rem; color: var(--text-muted); }
+        .section ul, .section ol { color: var(--text-muted); margin-left: 1.5rem; margin-bottom: 1rem; }
+        .section li { margin-bottom: 0.4rem; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; }
+
+        /* ============ CARDS ============ */
+        .card {
+            background: var(--bg-card); border-radius: 14px;
+            padding: 1.8rem; margin-bottom: 1.5rem;
+            border: 1px solid var(--border-subtle);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-2px); }
+        .card h3 { color: var(--text-main); }
+
+        .glass {
+            background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .card-primary { border-left: 4px solid var(--primary); }
+        .card-accent { border-left: 4px solid var(--accent); }
+        .card-success { border-left: 4px solid var(--success); }
+        .card-warning { border-left: 4px solid var(--warning); }
+
+        /* ============ CODE ============ */
+        .code-block {
+            background: #0d1117; border-radius: 10px;
+            overflow: hidden; margin: 1rem 0;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        pre {
+            padding: 1.2rem; font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem; overflow-x: auto; line-height: 1.6;
+        }
+
+        /* ============ FEATURE LIST ============ */
+        ul.feature-list { list-style-type: none; margin-left: 0; }
+        ul.feature-list li {
+            position: relative; padding-left: 1.8rem; margin-bottom: 0.6rem;
+        }
+        ul.feature-list li::before {
+            content: '▸'; position: absolute; left: 0;
+            color: var(--primary); font-weight: bold; font-size: 1.1em;
+        }
+
+        /* ============ PIPELINE ============ */
+        .pipeline { display: flex; align-items: center; justify-content: center; gap: 0; margin: 2rem 0; flex-wrap: wrap; }
+        .pipeline-step {
+            background: linear-gradient(135deg, #1e3a5f, #1e293b);
+            border: 2px solid var(--primary); border-radius: 12px;
+            padding: 1rem 1.4rem; text-align: center; min-width: 130px;
+            font-weight: 600; font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        .pipeline-step:hover { transform: scale(1.05); border-color: var(--accent); }
+        .pipeline-step small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; }
+        .pipeline-arrow {
+            color: var(--accent); font-size: 1.5rem; margin: 0 0.3rem;
+            font-weight: bold;
+        }
+
+        /* ============ TABLE ============ */
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+        th { background: rgba(56,189,248,0.1); color: var(--primary); text-align: left; padding: 0.7rem 1rem; border-bottom: 2px solid var(--border-subtle); }
+        td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        /* ============ TIP BOX ============ */
+        .tip-box {
+            background: rgba(34, 197, 94, 0.08);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-left: 4px solid var(--success);
+            border-radius: 10px; padding: 1.2rem 1.5rem;
+            margin: 1.5rem 0; font-size: 0.92rem;
+        }
+        .tip-box strong { color: var(--success); }
+
+        .warn-box {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-left: 4px solid var(--warning);
+            border-radius: 10px; padding: 1.2rem 1.5rem;
+            margin: 1.5rem 0; font-size: 0.92rem;
+        }
+        .warn-box strong { color: var(--warning); }
+
+        /* ============ RESPONSIVE ============ */
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: static; }
+            .content { margin-left: 0; padding: 2rem 1.5rem; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .pipeline { flex-direction: column; }
+            .pipeline-arrow { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>CatCompiler 🐾</h1>
+            <div class="cat-mascot">  /\_/\  
+ ( o.o ) 
+  > ^ <  </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">con Limón el Gato</p>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#intro" class="active">1. ¿Qué es un Intérprete?</a></li>
+                <li><a href="#architecture">2. Arquitectura General</a></li>
+                <hr class="nav-separator">
+                <li><a href="#tokens">3. Los Tokens</a></li>
+                <li><a href="#lexer">4. El Lexer</a></li>
+                <li><a href="#ast">5. El AST</a></li>
+                <li><a href="#parser">6. El Parser (Pratt)</a></li>
+                <li><a href="#evaluator">7. El Evaluador</a></li>
+                <li><a href="#objects">8. El Sistema de Objetos</a></li>
+                <hr class="nav-separator">
+                <li><a href="#repl">9. El REPL</a></li>
+                <li><a href="#modules">10. Estructura de Módulos</a></li>
+                <hr class="nav-separator">
+                <li><a href="visualizador.html" style="color: var(--accent); font-weight: bold;">🌳 Visualizador AST Interactivo</a></li>
+            </ul>
+        </nav>
+        <div style="margin-top: auto; text-align: center; font-size: 0.75rem; color: var(--text-muted); padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+            Curso de Compiladores 2026-2
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="hero">
+            <h1>Construyendo un Intérprete desde Cero</h1>
+            <p>Una guía visual y detallada para entender cómo funcionan los lenguajes de programación por dentro. Escrito en Go, explicado para humanos.</p>
+        </header>
+
+        <!-- ==================== SECCIÓN 1: INTRO ==================== -->
+        <section id="intro" class="section">
+            <h2>1. ¿Qué es un Intérprete?</h2>
+            <div class="card glass">
+                <h3>El Traductor Simultáneo de Código</h3>
+                <p>Un intérprete es un programa que <strong>lee, analiza y ejecuta</strong> otros programas. A diferencia de un compilador (que traduce <em>todo</em> el código a lenguaje máquina antes de ejecutarlo), un intérprete procesa el código <strong>instrucción por instrucción</strong>, ejecutándolo sobre la marcha.</p>
+                <p>Lenguajes como <strong>Python</strong>, <strong>JavaScript</strong> y <strong>Ruby</strong> usan intérpretes por debajo. Construir el nuestro nos enseña cómo una computadora realmente "entiende" el texto que escribimos.</p>
+            </div>
+            <div class="grid-2">
+                <div class="card card-primary">
+                    <h3 style="color: var(--primary);">Compilador vs Intérprete</h3>
+                    <ul class="feature-list">
+                        <li><strong>Compilador:</strong> Traduce TODO el código antes de ejecutar. Produce un ejecutable. Ejemplo: C, Go, Rust.</li>
+                        <li><strong>Intérprete:</strong> Lee y ejecuta línea por línea. No produce un ejecutable separado. Ejemplo: Python, Ruby.</li>
+                    </ul>
+                </div>
+                <div class="card card-accent">
+                    <h3 style="color: var(--accent);">¿Qué construiremos?</h3>
+                    <p>Un intérprete llamado <strong>CatCompiler</strong> escrito en Go que soporta:</p>
+                    <ul class="feature-list">
+                        <li>Variables (<code>let x = 5;</code>)</li>
+                        <li>Aritmética (<code>5 + 3 * 2</code>)</li>
+                        <li>Funciones (<code>function(x) { return x; }</code>)</li>
+                        <li>Condicionales (<code>if/else</code>)</li>
+                        <li>Ciclos (<code>while</code>, <code>for</code>)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 2: ARQUITECTURA ==================== -->
+        <section id="architecture" class="section">
+            <h2>2. Arquitectura General</h2>
+            <p>El viaje del código fuente desde texto plano hasta su ejecución se divide en una <strong>tubería (pipeline)</strong> de transformaciones secuenciales. Cada fase toma la salida de la anterior como entrada.</p>
+            
+            <div class="pipeline">
+                <div class="pipeline-step">📝 Código Fuente<small>let x = 5 + 3;</small></div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">🔤 Lexer<small>Texto → Tokens</small></div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">🌳 Parser<small>Tokens → Árbol AST</small></div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">⚡ Evaluador<small>Árbol → Resultado</small></div>
+                <span class="pipeline-arrow">→</span>
+                <div class="pipeline-step">📤 Resultado<small>8</small></div>
+            </div>
+
+            <div class="tip-box">
+                <strong>💡 ¿Por qué separar las fases?</strong><br>
+                Intentar hacer todo al mismo tiempo sería un caos. Al dividirlo, cada parte hace <strong>una sola cosa muy bien</strong>. El Lexer no se preocupa por las matemáticas, el Parser no se preocupa por los espacios en blanco, y el Evaluador no se preocupa por la gramática. Esto hace que el código sea más fácil de entender, probar y mantener.
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 3: TOKENS ==================== -->
+        <section id="tokens" class="section">
+            <h2>3. Los Tokens</h2>
+            <p>Los tokens son las <strong>"palabras"</strong> más pequeñas de nuestro lenguaje. Son la unidad mínima con significado, como las palabras en el español.</p>
+            
+            <div class="card glass">
+                <h3>¿Qué es un Token?</h3>
+                <p>Cada Token es una estructura simple con dos campos:</p>
+                <ul class="feature-list">
+                    <li><strong>Type</strong> → Qué tipo de pieza es (número, operador, palabra reservada...)</li>
+                    <li><strong>Literal</strong> → El texto original tal como apareció en el código</li>
+                </ul>
+                <div class="code-block"><pre><code class="language-go">// Definición de un Token en Go:
+type Token struct {
+    Type    TokenType  // Ej: "INT", "LET", "PLUS"
+    Literal string     // Ej: "42",  "let", "+"
+}</code></pre></div>
+            </div>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 1rem;">Tabla de Tokens de CatCompiler</h3>
+            <div class="grid-2">
+                <div class="card card-primary">
+                    <h3>Palabras Reservadas</h3>
+                    <table>
+                        <tr><th>Token</th><th>Literal</th><th>Uso</th></tr>
+                        <tr><td>LET</td><td><code>let</code></td><td>Declarar variables</td></tr>
+                        <tr><td>FUNCTION</td><td><code>function</code></td><td>Definir funciones</td></tr>
+                        <tr><td>RETURN</td><td><code>return</code></td><td>Retornar valores</td></tr>
+                        <tr><td>IF</td><td><code>if</code></td><td>Condicional</td></tr>
+                        <tr><td>ELSE</td><td><code>else</code></td><td>Rama alternativa</td></tr>
+                        <tr><td>WHILE</td><td><code>while</code></td><td>Ciclo while</td></tr>
+                        <tr><td>FOR</td><td><code>for</code></td><td>Ciclo for</td></tr>
+                        <tr><td>BREAK</td><td><code>break</code></td><td>Romper ciclo</td></tr>
+                        <tr><td>TRUE/FALSE</td><td><code>true/false</code></td><td>Booleanos</td></tr>
+                    </table>
+                </div>
+                <div class="card card-accent">
+                    <h3>Operadores y Delimitadores</h3>
+                    <table>
+                        <tr><th>Token</th><th>Literal</th><th>Uso</th></tr>
+                        <tr><td>ASSIGN</td><td><code>=</code></td><td>Asignar valor</td></tr>
+                        <tr><td>PLUS / MINUS</td><td><code>+ / -</code></td><td>Sumar / Restar</td></tr>
+                        <tr><td>ASTERISK / SLASH</td><td><code>* / /</code></td><td>Multiplicar / Dividir</td></tr>
+                        <tr><td>EQ / NOT_EQ</td><td><code>== / !=</code></td><td>Comparación</td></tr>
+                        <tr><td>LT / GT</td><td><code>< / ></code></td><td>Menor / Mayor</td></tr>
+                        <tr><td>BANG</td><td><code>!</code></td><td>Negación lógica</td></tr>
+                        <tr><td>SEMICOLON</td><td><code>;</code></td><td>Fin de sentencia</td></tr>
+                        <tr><td>LPAREN / RPAREN</td><td><code>( / )</code></td><td>Agrupar</td></tr>
+                        <tr><td>LBRACE / RBRACE</td><td><code>{ / }</code></td><td>Bloques de código</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card card-success" style="margin-top: 1rem;">
+                <h3>📂 Archivo: <code>token/token.go</code></h3>
+                <p>Aquí se definen todas las constantes de tokens y la función <code>LookupIdent()</code> que determina si una palabra es reservada (como <code>let</code>) o es un identificador (como <code>miVariable</code>).</p>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 4: LEXER ==================== -->
+        <section id="lexer" class="section">
+            <h2>4. El Lexer (Análisis Léxico)</h2>
+            <p>El Lexer es el <strong>primer paso</strong> del pipeline. Toma el código fuente como un string y lo convierte en una secuencia de Tokens.</p>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>📥 Entrada (Código Fuente)</h3>
+                    <div class="code-block"><pre><code class="language-javascript">let edad = 5 + 3;</code></pre></div>
+                    <p style="font-size: 0.85rem;">Para el Lexer, esto es solo una cadena de caracteres: <code>l</code>, <code>e</code>, <code>t</code>, <code> </code>, <code>e</code>, <code>d</code>, ...</p>
+                </div>
+                <div class="card">
+                    <h3>📤 Salida (Lista de Tokens)</h3>
+                    <div class="code-block"><pre><code class="language-go">{Type: LET,       Literal: "let"}
+{Type: IDENT,     Literal: "edad"}
+{Type: ASSIGN,    Literal: "="}
+{Type: INT,       Literal: "5"}
+{Type: PLUS,      Literal: "+"}
+{Type: INT,       Literal: "3"}
+{Type: SEMICOLON, Literal: ";"}</code></pre></div>
+                </div>
+            </div>
+
+            <div class="card glass" style="margin-top: 1rem;">
+                <h3>¿Cómo funciona internamente?</h3>
+                <p>El Lexer usa <strong>4 campos</strong> para moverse por el código fuente:</p>
+                <ul class="feature-list">
+                    <li><strong><code>input</code></strong> → El string completo del código fuente.</li>
+                    <li><strong><code>position</code></strong> → La posición del carácter que estamos leyendo AHORA.</li>
+                    <li><strong><code>readPosition</code></strong> → La posición del SIGUIENTE carácter (para "espiar" adelante).</li>
+                    <li><strong><code>ch</code></strong> → El carácter actual bajo análisis.</li>
+                </ul>
+
+                <h3 style="margin-top: 1rem;">Funciones clave:</h3>
+                <table>
+                    <tr><th>Función</th><th>¿Qué hace?</th></tr>
+                    <tr><td><code>readChar()</code></td><td>Avanza al siguiente carácter y actualiza los punteros.</td></tr>
+                    <tr><td><code>NextToken()</code></td><td>Lee el carácter actual, crea el Token correspondiente y avanza.</td></tr>
+                    <tr><td><code>peekChar()</code></td><td>Espía el siguiente carácter <em>sin avanzar</em>. Útil para <code>==</code> y <code>!=</code>.</td></tr>
+                    <tr><td><code>skipWhitespace()</code></td><td>Ignora espacios, tabs y saltos de línea.</td></tr>
+                    <tr><td><code>readIdentifier()</code></td><td>Lee letras consecutivas para formar una palabra completa.</td></tr>
+                    <tr><td><code>readNumber()</code></td><td>Lee dígitos consecutivos para formar un número completo.</td></tr>
+                </table>
+            </div>
+
+            <div class="card card-success">
+                <h3>📂 Archivo: <code>lexer/lexer.go</code></h3>
+                <p>Contiene toda la lógica del analizador léxico. Tiene pruebas automatizadas en <code>lexer/lexer_test.go</code>.</p>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 5: AST ==================== -->
+        <section id="ast" class="section">
+            <h2>5. El AST (Árbol de Sintaxis Abstracta)</h2>
+            <p>El AST es una <strong>estructura jerárquica</strong> que representa el significado lógico del código. Convierte una lista plana de tokens en un árbol con relaciones padre-hijo.</p>
+
+            <div class="card glass card-accent">
+                <h3>¿Por qué un árbol y no una lista?</h3>
+                <p>Una lista plana no tiene estructura. Si tenemos los tokens <code>[5, +, 3, *, 2]</code>, no sabemos si es <code>(5+3)*2</code> o <code>5+(3*2)</code>. El árbol resuelve esto poniendo las operaciones prioritarias más abajo (se resuelven primero).</p>
+                <div class="code-block"><pre><code>// "5 + 3 * 2" se convierte en:
+//
+//       InfixExpression(+)
+//       /               \
+//   IntLiteral(5)    InfixExpression(*)
+//                    /               \
+//               IntLiteral(3)    IntLiteral(2)
+//
+// El evaluador recorre de abajo hacia arriba:
+// Primero resuelve 3 * 2 = 6, luego 5 + 6 = 11</code></pre></div>
+            </div>
+
+            <h3 style="margin: 1.5rem 0 1rem;">Las 3 Categorías del AST</h3>
+
+            <div class="grid-3">
+                <div class="card card-primary">
+                    <h3 style="font-size: 1rem;">🔵 Nodo (Node)</h3>
+                    <p style="font-size: 0.85rem;">La base. Todo en el árbol es un Nodo. Define los métodos <code>TokenLiteral()</code> y <code>String()</code>.</p>
+                </div>
+                <div class="card card-accent">
+                    <h3 style="font-size: 1rem;">🟣 Sentencia (Statement)</h3>
+                    <p style="font-size: 0.85rem;">Instrucciones que <strong>no producen</strong> un valor. Ej: <code>let x = 5;</code>, <code>return 10;</code></p>
+                </div>
+                <div class="card card-success">
+                    <h3 style="font-size: 1rem;">🟢 Expresión (Expression)</h3>
+                    <p style="font-size: 0.85rem;">Código que <strong>sí produce</strong> un valor. Ej: <code>5 + 3</code>, <code>miVar</code>, <code>true</code></p>
+                </div>
+            </div>
+
+            <h3 style="margin: 1.5rem 0 1rem;">Todos los nodos del AST</h3>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Sentencias (Statements)</h3>
+                    <table>
+                        <tr><th>Nodo</th><th>Ejemplo</th></tr>
+                        <tr><td><code>LetStatement</code></td><td><code>let x = 5;</code></td></tr>
+                        <tr><td><code>ReturnStatement</code></td><td><code>return x + y;</code></td></tr>
+                        <tr><td><code>ExpressionStatement</code></td><td><code>5 + 3;</code> (expresión suelta)</td></tr>
+                        <tr><td><code>BlockStatement</code></td><td><code>{ let a = 1; return a; }</code></td></tr>
+                    </table>
+                </div>
+                <div class="card">
+                    <h3>Expresiones (Expressions)</h3>
+                    <table>
+                        <tr><th>Nodo</th><th>Ejemplo</th></tr>
+                        <tr><td><code>Identifier</code></td><td><code>x</code>, <code>miVariable</code></td></tr>
+                        <tr><td><code>IntegerLiteral</code></td><td><code>42</code></td></tr>
+                        <tr><td><code>Boolean</code></td><td><code>true</code>, <code>false</code></td></tr>
+                        <tr><td><code>PrefixExpression</code></td><td><code>-5</code>, <code>!true</code></td></tr>
+                        <tr><td><code>InfixExpression</code></td><td><code>5 + 3</code>, <code>x == y</code></td></tr>
+                        <tr><td><code>IfExpression</code></td><td><code>if (x > 5) { ... }</code></td></tr>
+                        <tr><td><code>FunctionLiteral</code></td><td><code>function(x) { ... }</code></td></tr>
+                        <tr><td><code>CallExpression</code></td><td><code>add(2, 3)</code></td></tr>
+                        <tr><td><code>WhileExpression</code></td><td><code>while (x < 10) { ... }</code></td></tr>
+                        <tr><td><code>ForExpression</code></td><td><code>for (i < 100) { ... }</code></td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card card-success">
+                <h3>📂 Archivo: <code>ast/ast.go</code></h3>
+                <p>Define todas las interfaces (Node, Statement, Expression) y las estructuras que representan cada tipo de nodo. Cada nodo implementa un método <code>String()</code> para poder imprimirse de vuelta como código.</p>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 6: PARSER ==================== -->
+        <section id="parser" class="section">
+            <h2>6. El Parser y el Algoritmo Pratt</h2>
+            <p>El Parser toma la lista de tokens del Lexer y construye el Árbol AST. Usa el algoritmo <strong>Pratt Parsing</strong> (Top-Down Operator Precedence) para resolver correctamente la jerarquía matemática.</p>
+
+            <div class="card glass card-primary">
+                <h3>La Idea Central de Pratt Parsing</h3>
+                <p>Cada token tiene un <strong>nivel de prioridad</strong> (precedencia). El parser usa dos diccionarios:</p>
+                <ul class="feature-list">
+                    <li><strong><code>prefixParseFns</code></strong> → Funciones para tokens al INICIO de una expresión (ej. un número <code>5</code>, una negación <code>-x</code>, un <code>if</code>).</li>
+                    <li><strong><code>infixParseFns</code></strong> → Funciones para tokens EN MEDIO de una expresión (ej. <code>+</code>, <code>*</code>, <code>==</code>).</li>
+                </ul>
+                <p style="margin-top: 1rem;">Cuando el parser encuentra un token, busca la función correspondiente en el diccionario y la ejecuta. Es como tener un especialista para cada tipo de operación.</p>
+            </div>
+
+            <div class="card card-warning">
+                <h3 style="color: var(--warning);">⚖️ Tabla de Precedencias (Prioridad)</h3>
+                <p>Un número más alto = se agrupa PRIMERO en el árbol.</p>
+                <table>
+                    <tr><th>Nivel</th><th>Nombre</th><th>Operadores</th><th>Ejemplo</th></tr>
+                    <tr><td>7</td><td>CALL</td><td><code>(</code></td><td><code>add(x)</code></td></tr>
+                    <tr><td>6</td><td>PREFIX</td><td><code>- !</code></td><td><code>-5</code>, <code>!true</code></td></tr>
+                    <tr><td>5</td><td>PRODUCT</td><td><code>* /</code></td><td><code>2 * 3</code></td></tr>
+                    <tr><td>4</td><td>SUM</td><td><code>+ -</code></td><td><code>1 + 2</code></td></tr>
+                    <tr><td>3</td><td>LESSGREATER</td><td><code>< ></code></td><td><code>x > 5</code></td></tr>
+                    <tr><td>2</td><td>EQUALS</td><td><code>== !=</code></td><td><code>x == y</code></td></tr>
+                    <tr><td>1</td><td>LOWEST</td><td>—</td><td>Base (sin restricción)</td></tr>
+                </table>
+            </div>
+
+            <div class="card glass">
+                <h3>🎬 Ejemplo Paso a Paso: <code>1 + 2 * 3</code></h3>
+                <div class="code-block"><pre><code>Tokens: [INT(1), PLUS(+), INT(2), ASTERISK(*), INT(3)]
+
+LLAMADA 1: parseExpression(LOWEST=1)
+  → Ve INT(1) → crea IntegerLiteral(1) como leftExp
+  → peek = PLUS(+), precedencia = SUM(4). Como 1 < 4, ENTRA al loop
+  → Avanza al +. Llama a parseInfixExpression(left=1)
+    → Guarda Left=1, Op="+", prioridad actual=SUM(4)
+    → Necesita el Right → llama recursivamente parseExpression(SUM=4)
+
+    LLAMADA 2: parseExpression(SUM=4)
+      → Ve INT(2) → crea IntegerLiteral(2)
+      → peek = ASTERISK(*), precedencia = PRODUCT(5). Como 4 < 5, ENTRA al loop
+      → Avanza al *. Llama a parseInfixExpression(left=2)
+        → Guarda Left=2, Op="*", prioridad=PRODUCT(5)
+        → Necesita el Right → llama recursivamente parseExpression(PRODUCT=5)
+
+        LLAMADA 3: parseExpression(PRODUCT=5)
+          → Ve INT(3) → crea IntegerLiteral(3)
+          → peek = EOF, precedencia = LOWEST(1). Como 5 > 1, NO entra al loop
+          → Retorna IntegerLiteral(3)
+
+      → Right = 3 → Retorna InfixExpression(2, "*", 3)
+
+  → Right = (2 * 3) → Retorna InfixExpression(1, "+", (2 * 3))
+
+RESULTADO FINAL: (1 + (2 * 3))  ✅ ¡La multiplicación se agrupó primero!</code></pre></div>
+            </div>
+
+            <div class="card card-success">
+                <h3>📂 Archivo: <code>parser/parser.go</code></h3>
+                <p>Contiene el motor del Pratt Parser, las tablas de precedencia, y todas las funciones de parseo (let, return, if, while, for, function y llamadas a función).</p>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 7: EVALUADOR ==================== -->
+        <section id="evaluator" class="section">
+            <h2>7. El Evaluador</h2>
+            <p>El Evaluador es la <strong>última fase</strong>: toma el Árbol AST y lo <strong>ejecuta</strong>, produciendo resultados reales.</p>
+            
+            <div class="card glass">
+                <h3>¿Cómo funciona?</h3>
+                <p>Es una <strong>función recursiva</strong> llamada <code>Eval(node)</code> que recorre el árbol de abajo hacia arriba:</p>
+                <ul class="feature-list">
+                    <li>Si el nodo es un <code>IntegerLiteral(5)</code> → devuelve el objeto entero 5.</li>
+                    <li>Si el nodo es un <code>InfixExpression(3, "+", 2)</code> → evalúa Left (3), evalúa Right (2), suma ambos → devuelve 5.</li>
+                    <li>Si el nodo es un <code>LetStatement("x", 5)</code> → guarda x=5 en el entorno (memoria).</li>
+                    <li>Si el nodo es un <code>IfExpression</code> → evalúa la condición, y según sea true/false ejecuta el bloque correspondiente.</li>
+                </ul>
+            </div>
+
+            <div class="card card-accent">
+                <h3 style="color: var(--accent);">🧠 El Entorno (Environment)</h3>
+                <p>Para que las variables funcionen, el evaluador necesita <strong>memoria</strong>. El "Environment" es un diccionario que guarda las asociaciones nombre → valor:</p>
+                <div class="code-block"><pre><code class="language-go">// Conceptualmente, el Entorno es un mapa:
+Environment = map[string]Object{
+    "x":      IntegerObject(10),
+    "nombre": StringObject("Limón"),
+    "activo": BooleanObject(true),
+}</code></pre></div>
+                <p>Cuando el evaluador encuentra un <code>Identifier("x")</code>, busca "x" en el Environment y devuelve su valor (10).</p>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 8: OBJETOS ==================== -->
+        <section id="objects" class="section">
+            <h2>8. El Sistema de Objetos</h2>
+            <p>Los objetos son los <strong>valores reales</strong> que viven en memoria durante la ejecución. Son lo que el Evaluador produce y manipula.</p>
+            
+            <div class="grid-3">
+                <div class="card card-primary" style="text-align: center;">
+                    <h3 style="font-size: 2rem;">🔢</h3>
+                    <h3>Integer</h3>
+                    <p style="font-size: 0.85rem;">Números enteros.<br><code>Value: int64</code></p>
+                </div>
+                <div class="card card-accent" style="text-align: center;">
+                    <h3 style="font-size: 2rem;">✅</h3>
+                    <h3>Boolean</h3>
+                    <p style="font-size: 0.85rem;">true o false.<br><code>Value: bool</code></p>
+                </div>
+                <div class="card card-success" style="text-align: center;">
+                    <h3 style="font-size: 2rem;">🚫</h3>
+                    <h3>Null</h3>
+                    <p style="font-size: 0.85rem;">Ausencia de valor.<br>Equivalente a <code>nil</code></p>
+                </div>
+            </div>
+
+            <div class="warn-box">
+                <strong>⚠️ Próximamente:</strong> El sistema de objetos y el evaluador se implementarán en la siguiente fase del proyecto. Los tipos de arriba son los que soportará inicialmente CatCompiler.
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 9: REPL ==================== -->
+        <section id="repl" class="section">
+            <h2>9. La Consola Interactiva (REPL)</h2>
+            
+            <div class="card glass">
+                <h3>Read → Eval → Print → Loop</h3>
+                <p>El REPL es el <strong>programa principal</strong> que unifica todas las piezas en un ciclo infinito:</p>
+                <ol>
+                    <li><strong>Read:</strong> Lee lo que el usuario escribe en la consola.</li>
+                    <li><strong>Eval:</strong> Pasa el texto por el Lexer → Parser → (futuro: Evaluador).</li>
+                    <li><strong>Print:</strong> Muestra el resultado al usuario.</li>
+                    <li><strong>Loop:</strong> Vuelve al paso 1 mostrando el prompt <code>>></code>.</li>
+                </ol>
+            </div>
+
+            <div class="card card-primary">
+                <h3>🎮 CatCompiler tiene dos modos</h3>
+                <p>Al iniciar con <code>go run main.go</code>, el usuario puede elegir:</p>
+                <ul class="feature-list">
+                    <li><strong>Modo 1 (Lexer):</strong> Muestra la lista de tokens generados por el Lexer.</li>
+                    <li><strong>Modo 2 (Parser):</strong> Muestra el AST reconstruido como texto (con paréntesis de precedencia).</li>
+                </ul>
+                <div class="code-block"><pre><code>$ go run main.go
+Selecciona el modo de interacción:
+1. Modo Lexer (Muestra los Tokens generados)
+2. Modo Parser (Construye y muestra el Árbol AST)
+Opción [1 o 2]: 2
+
+>> let x = 3 + 4 * 41;
+AST Generado: 
+let x = (3 + (4 * 41));</code></pre></div>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 10: MÓDULOS ==================== -->
+        <section id="modules" class="section">
+            <h2>10. Estructura de Módulos en Go</h2>
+            <p>Así se conectan los paquetes de nuestro proyecto a nivel de código:</p>
+
+            <div class="card" style="background: linear-gradient(135deg, rgba(244,114,182,0.1), rgba(56,189,248,0.1)); border: 2px solid var(--accent); text-align: center; padding: 2rem;">
+                <h3 style="font-size: 1.3rem;">🌳 ¿Quieres ver el Árbol AST en acción?</h3>
+                <p style="margin: 0.8rem 0;">Prueba el <strong>Visualizador Interactivo</strong>: escribe cualquier expresión y observa cómo el Parser construye el árbol paso a paso.</p>
+                <a href="visualizador.html" style="display: inline-block; margin-top: 0.5rem; padding: 0.8rem 2rem; background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1rem; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">Abrir Visualizador 🐾</a>
+            </div>
+            
+            <div class="card glass" style="text-align: center; padding: 2rem;">
+                <div class="mermaid">
+                    graph TD
+                    M["main.go"] -->|"Inicia"| R["repl"]
+                    R -->|"Crea"| L["lexer"]
+                    R -->|"Crea"| P["parser"]
+                    R -->|"Llama a"| E["evaluator"]
+                    
+                    L -.->|"Usa"| T["token"]
+                    P -.->|"Usa"| L
+                    P -.->|"Genera"| A["ast"]
+                    E -.->|"Lee"| A
+                    E -.->|"Retorna"| O["object"]
+                    
+                    classDef default fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc,rx:10,ry:10;
+                </div>
+            </div>
+            
+            <div class="grid-2" style="margin-top: 1.5rem;">
+                <div class="card card-primary">
+                    <h3 style="color: var(--primary);">📦 Paquetes de Datos (Estructuras)</h3>
+                    <ul class="feature-list">
+                        <li><strong><code>token/</code></strong> → Las "palabras" base del lenguaje. No depende de nadie.</li>
+                        <li><strong><code>ast/</code></strong> → Las estructuras del árbol (LetStatement, IfExpression...). Depende de <code>token</code>.</li>
+                        <li><strong><code>object/</code></strong> → Los valores reales en memoria (Integer, Boolean, Null).</li>
+                    </ul>
+                </div>
+                <div class="card card-accent">
+                    <h3 style="color: var(--accent);">⚙️ Paquetes Activos (Motores)</h3>
+                    <ul class="feature-list">
+                        <li><strong><code>lexer/</code></strong> → Transforma <code>string</code> en <code>[]token</code>.</li>
+                        <li><strong><code>parser/</code></strong> → Transforma <code>[]token</code> en <code>ast.Program</code>.</li>
+                        <li><strong><code>evaluator/</code></strong> → Transforma <code>ast.Program</code> en <code>object</code>.</li>
+                        <li><strong><code>repl/</code></strong> + <strong><code>main.go</code></strong> → Orquestan todo el flujo.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        hljs.highlightAll();
+
+        // Smooth scrolling + active state
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    window.scrollTo({ top: targetSection.offsetTop - 20, behavior: 'smooth' });
+                }
+                document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Update active nav on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('.section');
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (window.scrollY >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+            document.querySelectorAll('nav a').forEach(a => {
+                a.classList.remove('active');
+                if (a.getAttribute('href') === '#' + current) {
+                    a.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
