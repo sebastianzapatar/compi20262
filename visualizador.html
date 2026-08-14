@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatCompiler | Visualizador Interactivo del AST</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --bg-card: #1e293b;
+            --primary: #38bdf8;
+            --accent: #f472b6;
+            --success: #22c55e;
+            --warning: #eab308;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --node-int: #22c55e;
+            --node-ident: #a78bfa;
+            --node-op: #f472b6;
+            --node-stmt: #38bdf8;
+            --node-bool: #eab308;
+            --node-fn: #fb923c;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; padding: 2rem;
+        }
+
+        .header {
+            text-align: center; margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2.2rem; font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .header p { color: var(--muted); margin-top: 0.5rem; }
+
+        .input-area {
+            max-width: 750px; margin: 0 auto 2rem;
+            display: flex; gap: 0.8rem;
+        }
+        #codeInput {
+            flex: 1; padding: 1rem 1.2rem;
+            font-family: 'JetBrains Mono', monospace; font-size: 1.1rem;
+            background: var(--bg-card); color: var(--text);
+            border: 2px solid rgba(56,189,248,0.3); border-radius: 12px;
+            outline: none; transition: border-color 0.3s;
+        }
+        #codeInput:focus { border-color: var(--primary); }
+        #codeInput::placeholder { color: var(--muted); }
+        #parseBtn {
+            padding: 1rem 1.8rem; font-size: 1rem; font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            color: white; border: none; border-radius: 12px;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        #parseBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(56,189,248,0.3); }
+
+        .examples {
+            max-width: 750px; margin: 0 auto 2rem;
+            display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+        }
+        .example-btn {
+            padding: 0.4rem 0.9rem; font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(56,189,248,0.1); color: var(--primary);
+            border: 1px solid rgba(56,189,248,0.2); border-radius: 8px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .example-btn:hover { background: rgba(56,189,248,0.2); }
+
+        .panels {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1.5rem; max-width: 1200px; margin: 0 auto 2rem;
+        }
+        .panel {
+            background: var(--bg-card); border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 0.8rem 1.2rem;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .panel-body { padding: 1.2rem; overflow-x: auto; }
+
+        .token-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .token-chip {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+            padding: 0.35rem 0.7rem; border-radius: 6px;
+            display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .token-chip .tok-type {
+            font-weight: 700; opacity: 0.7; font-size: 0.65rem;
+            text-transform: uppercase;
+        }
+
+        /* Tree */
+        .tree-container {
+            background: var(--bg-card); border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            max-width: 1200px; margin: 0 auto;
+            overflow: hidden;
+        }
+        .tree-header {
+            padding: 0.8rem 1.2rem;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-weight: 600; font-size: 0.9rem;
+        }
+        .tree-body {
+            padding: 2rem; overflow-x: auto; min-height: 200px;
+            display: flex; justify-content: center;
+        }
+
+        .tree-node {
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .node-box {
+            padding: 0.5rem 1rem; border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            font-weight: 600; text-align: center;
+            border: 2px solid; margin-bottom: 0.3rem;
+            white-space: nowrap;
+            animation: fadeIn 0.4s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .node-label {
+            font-size: 0.6rem; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.05em;
+            margin-bottom: 0.2rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .node-int .node-box { background: rgba(34,197,94,0.15); border-color: var(--node-int); color: var(--node-int); }
+        .node-ident .node-box { background: rgba(167,139,250,0.15); border-color: var(--node-ident); color: var(--node-ident); }
+        .node-op .node-box { background: rgba(244,114,182,0.15); border-color: var(--node-op); color: var(--node-op); }
+        .node-stmt .node-box { background: rgba(56,189,248,0.15); border-color: var(--node-stmt); color: var(--node-stmt); }
+        .node-bool .node-box { background: rgba(234,179,8,0.15); border-color: var(--node-bool); color: var(--node-bool); }
+        .node-fn .node-box { background: rgba(251,146,60,0.15); border-color: var(--node-fn); color: var(--node-fn); }
+
+        .children {
+            display: flex; gap: 1.5rem; margin-top: 0.3rem;
+            position: relative; padding-top: 1.2rem;
+        }
+        .children::before {
+            content: ''; position: absolute;
+            top: 0; left: 25%; right: 25%;
+            height: 1px; background: rgba(255,255,255,0.15);
+        }
+        .children > .tree-node::before {
+            content: ''; position: absolute; top: 0;
+            width: 1px; height: 1.2rem;
+            background: rgba(255,255,255,0.15);
+        }
+        .children > .tree-node { position: relative; }
+        .children > .tree-node::before {
+            left: 50%; transform: translateX(-50%);
+        }
+
+        /* Single child - vertical line only */
+        .children.single::before { display: none; }
+
+        .output-text {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.95rem;
+            color: var(--success); line-height: 1.6;
+        }
+
+        #errorMsg {
+            text-align: center; color: var(--accent);
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            padding: 1rem;
+        }
+
+        .legend {
+            max-width: 1200px; margin: 1.5rem auto 0;
+            display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.75rem; color: var(--muted);
+        }
+        .legend-dot {
+            width: 12px; height: 12px; border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .panels { grid-template-columns: 1fr; }
+            body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🌳 Visualizador del AST</h1>
+        <p>Escribe una expresión y observa cómo el Parser construye el Árbol de Sintaxis Abstracta paso a paso.</p>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="codeInput" placeholder="Escribe código aquí... ej: 1 + 2 * 3" autofocus>
+        <button id="parseBtn" onclick="run()">Parsear 🐾</button>
+    </div>
+
+    <div class="examples">
+        <button class="example-btn" onclick="setExample('1 + 3')">1 + 3</button>
+        <button class="example-btn" onclick="setExample('5 + 2 * 3')">5 + 2 * 3</button>
+        <button class="example-btn" onclick="setExample('let x = 109 + 4;')">let x = 109 + 4;</button>
+        <button class="example-btn" onclick="setExample('(1 + 2) * 3')"> (1 + 2) * 3</button>
+        <button class="example-btn" onclick="setExample('!true')">!true</button>
+        <button class="example-btn" onclick="setExample('-5 + 10')">-5 + 10</button>
+        <button class="example-btn" onclick="setExample('return x + y;')">return x + y;</button>
+        <button class="example-btn" onclick="setExample('if (x > 5) { return true; }')">if (x > 5) { ... }</button>
+        <button class="example-btn" onclick="setExample('1 + 2 * 3 == 7')">1 + 2 * 3 == 7</button>
+    </div>
+
+    <div class="panels">
+        <div class="panel">
+            <div class="panel-header">🔤 Tokens (Lexer)</div>
+            <div class="panel-body"><div id="tokenOutput" class="token-list"><span style="color:var(--muted)">Escribe código y presiona Parsear...</span></div></div>
+        </div>
+        <div class="panel">
+            <div class="panel-header">📝 AST como texto (String)</div>
+            <div class="panel-body"><div id="stringOutput" class="output-text"><span style="color:var(--muted)">El resultado aparecerá aquí...</span></div></div>
+        </div>
+    </div>
+
+    <div class="tree-container">
+        <div class="tree-header">🌳 Árbol AST Visual</div>
+        <div class="tree-body" id="treeOutput"><span style="color:var(--muted)">El árbol se dibujará aquí...</span></div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--node-stmt)"></div> Sentencia</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--node-op)"></div> Operador</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--node-int)"></div> Entero</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--node-ident)"></div> Identificador</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--node-bool)"></div> Booleano</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--node-fn)"></div> Función / Bloque</div>
+    </div>
+
+    <div id="errorMsg"></div>
+
+<script>
+// ============================================================================
+// MINI LEXER EN JAVASCRIPT (espejo del lexer de Go)
+// ============================================================================
+
+const TOKENS = {
+    ILLEGAL:'ILLEGAL', EOF:'EOF', IDENT:'IDENT', INT:'INT',
+    ASSIGN:'=', PLUS:'+', MINUS:'-', BANG:'!', ASTERISK:'*', SLASH:'/',
+    LT:'<', GT:'>', EQ:'==', NOT_EQ:'!=',
+    COMMA:',', SEMICOLON:';',
+    LPAREN:'(', RPAREN:')', LBRACE:'{', RBRACE:'}',
+    LET:'LET', FUNCTION:'FUNCTION', TRUE:'TRUE', FALSE:'FALSE',
+    IF:'IF', ELSE:'ELSE', RETURN:'RETURN', WHILE:'WHILE', FOR:'FOR', BREAK:'BREAK'
+};
+
+const KEYWORDS = {
+    'let':TOKENS.LET, 'function':TOKENS.FUNCTION, 'true':TOKENS.TRUE,
+    'false':TOKENS.FALSE, 'if':TOKENS.IF, 'else':TOKENS.ELSE,
+    'return':TOKENS.RETURN, 'while':TOKENS.WHILE, 'for':TOKENS.FOR, 'break':TOKENS.BREAK
+};
+
+class Lexer {
+    constructor(input) {
+        this.input = input; this.pos = 0; this.readPos = 0; this.ch = '';
+        this.readChar();
+    }
+    readChar() {
+        this.ch = this.readPos >= this.input.length ? '\0' : this.input[this.readPos];
+        this.pos = this.readPos; this.readPos++;
+    }
+    peekChar() { return this.readPos >= this.input.length ? '\0' : this.input[this.readPos]; }
+    skipWS() { while (this.ch===' '||this.ch==='\t'||this.ch==='\n'||this.ch==='\r') this.readChar(); }
+    readIdent() { let p=this.pos; while (/[a-zA-Z_]/.test(this.ch)) this.readChar(); return this.input.slice(p,this.pos); }
+    readNum() { let p=this.pos; while (/[0-9]/.test(this.ch)) this.readChar(); return this.input.slice(p,this.pos); }
+    nextToken() {
+        this.skipWS();
+        let tok;
+        switch(this.ch) {
+            case '=': if(this.peekChar()==='='){this.readChar();tok={type:TOKENS.EQ,literal:'=='};}else{tok={type:TOKENS.ASSIGN,literal:'='};} break;
+            case '+': tok={type:TOKENS.PLUS,literal:'+'}; break;
+            case '-': tok={type:TOKENS.MINUS,literal:'-'}; break;
+            case '!': if(this.peekChar()==='='){this.readChar();tok={type:TOKENS.NOT_EQ,literal:'!='};}else{tok={type:TOKENS.BANG,literal:'!'};} break;
+            case '*': tok={type:TOKENS.ASTERISK,literal:'*'}; break;
+            case '/': tok={type:TOKENS.SLASH,literal:'/'}; break;
+            case '<': tok={type:TOKENS.LT,literal:'<'}; break;
+            case '>': tok={type:TOKENS.GT,literal:'>'}; break;
+            case ';': tok={type:TOKENS.SEMICOLON,literal:';'}; break;
+            case ',': tok={type:TOKENS.COMMA,literal:','}; break;
+            case '(': tok={type:TOKENS.LPAREN,literal:'('}; break;
+            case ')': tok={type:TOKENS.RPAREN,literal:')'}; break;
+            case '{': tok={type:TOKENS.LBRACE,literal:'{'}; break;
+            case '}': tok={type:TOKENS.RBRACE,literal:'}'}; break;
+            case '\0': return {type:TOKENS.EOF,literal:''};
+            default:
+                if (/[a-zA-Z_]/.test(this.ch)) { let lit=this.readIdent(); return {type:KEYWORDS[lit]||TOKENS.IDENT,literal:lit}; }
+                if (/[0-9]/.test(this.ch)) { return {type:TOKENS.INT,literal:this.readNum()}; }
+                tok={type:TOKENS.ILLEGAL,literal:this.ch};
+        }
+        this.readChar(); return tok;
+    }
+}
+
+// ============================================================================
+// MINI PARSER (Pratt) EN JAVASCRIPT
+// ============================================================================
+
+const PREC = { LOWEST:1, EQUALS:2, LG:3, SUM:4, PRODUCT:5, PREFIX:6, CALL:7 };
+const PREC_MAP = {
+    [TOKENS.EQ]:PREC.EQUALS, [TOKENS.NOT_EQ]:PREC.EQUALS,
+    [TOKENS.LT]:PREC.LG, [TOKENS.GT]:PREC.LG,
+    [TOKENS.PLUS]:PREC.SUM, [TOKENS.MINUS]:PREC.SUM,
+    [TOKENS.SLASH]:PREC.PRODUCT, [TOKENS.ASTERISK]:PREC.PRODUCT,
+    [TOKENS.LPAREN]:PREC.CALL
+};
+
+class Parser {
+    constructor(lexer) {
+        this.l = lexer; this.errors = [];
+        this.cur = null; this.peek = null;
+        this.prefixFns = {}; this.infixFns = {};
+
+        this.regPrefix(TOKENS.IDENT, () => ({type:'Identifier', value:this.cur.literal}));
+        this.regPrefix(TOKENS.INT, () => ({type:'IntegerLiteral', value:parseInt(this.cur.literal)}));
+        this.regPrefix(TOKENS.TRUE, () => ({type:'Boolean', value:true}));
+        this.regPrefix(TOKENS.FALSE, () => ({type:'Boolean', value:false}));
+        this.regPrefix(TOKENS.BANG, () => this.parsePre());
+        this.regPrefix(TOKENS.MINUS, () => this.parsePre());
+        this.regPrefix(TOKENS.LPAREN, () => this.parseGrouped());
+        this.regPrefix(TOKENS.IF, () => this.parseIf());
+        this.regPrefix(TOKENS.FUNCTION, () => this.parseFn());
+        this.regPrefix(TOKENS.WHILE, () => this.parseWhile());
+        this.regPrefix(TOKENS.FOR, () => this.parseFor());
+
+        for (let op of [TOKENS.PLUS,TOKENS.MINUS,TOKENS.SLASH,TOKENS.ASTERISK,TOKENS.EQ,TOKENS.NOT_EQ,TOKENS.LT,TOKENS.GT])
+            this.regInfix(op, (l) => this.parseInfix(l));
+        this.regInfix(TOKENS.LPAREN, (l) => this.parseCall(l));
+
+        this.next(); this.next();
+    }
+    regPrefix(t,f){this.prefixFns[t]=f;} regInfix(t,f){this.infixFns[t]=f;}
+    next(){this.cur=this.peek;this.peek=this.l.nextToken();}
+    curIs(t){return this.cur.type===t;} peekIs(t){return this.peek.type===t;}
+    expectPeek(t){if(this.peekIs(t)){this.next();return true;}this.errors.push(`Se esperaba ${t}, se obtuvo ${this.peek.type}`);return false;}
+    peekPrec(){return PREC_MAP[this.peek.type]||PREC.LOWEST;}
+    curPrec(){return PREC_MAP[this.cur.type]||PREC.LOWEST;}
+
+    parseProgram(){
+        let stmts=[];
+        while(this.cur.type!==TOKENS.EOF){let s=this.parseStmt();if(s)stmts.push(s);this.next();}
+        return stmts.length===1?stmts[0]:{type:'Program',statements:stmts};
+    }
+    parseStmt(){
+        if(this.cur.type===TOKENS.LET) return this.parseLet();
+        if(this.cur.type===TOKENS.RETURN) return this.parseReturn();
+        return this.parseExprStmt();
+    }
+    parseLet(){
+        if(!this.expectPeek(TOKENS.IDENT))return null;
+        let name=this.cur.literal;
+        if(!this.expectPeek(TOKENS.ASSIGN))return null;
+        this.next();
+        let val=this.parseExpr(PREC.LOWEST);
+        if(this.peekIs(TOKENS.SEMICOLON))this.next();
+        return {type:'LetStatement', name, value:val};
+    }
+    parseReturn(){
+        this.next();
+        let val=this.parseExpr(PREC.LOWEST);
+        if(this.peekIs(TOKENS.SEMICOLON))this.next();
+        return {type:'ReturnStatement', value:val};
+    }
+    parseExprStmt(){
+        let expr=this.parseExpr(PREC.LOWEST);
+        if(this.peekIs(TOKENS.SEMICOLON))this.next();
+        return expr;
+    }
+    parseExpr(prec){
+        let fn=this.prefixFns[this.cur.type];
+        if(!fn){this.errors.push(`No sé parsear: ${this.cur.type} (${this.cur.literal})`);return null;}
+        let left=fn();
+        while(!this.peekIs(TOKENS.SEMICOLON)&&prec<this.peekPrec()){
+            let inFn=this.infixFns[this.peek.type]; if(!inFn)return left;
+            this.next(); left=inFn(left);
+        }
+        return left;
+    }
+    parsePre(){let op=this.cur.literal;this.next();return {type:'PrefixExpression',operator:op,right:this.parseExpr(PREC.PREFIX)};}
+    parseInfix(left){let op=this.cur.literal;let p=this.curPrec();this.next();return {type:'InfixExpression',operator:op,left,right:this.parseExpr(p)};}
+    parseGrouped(){this.next();let e=this.parseExpr(PREC.LOWEST);this.expectPeek(TOKENS.RPAREN);return e;}
+    parseBlock(){
+        let stmts=[];this.next();
+        while(!this.curIs(TOKENS.RBRACE)&&!this.curIs(TOKENS.EOF)){let s=this.parseStmt();if(s)stmts.push(s);this.next();}
+        return {type:'BlockStatement',statements:stmts};
+    }
+    parseIf(){
+        if(!this.expectPeek(TOKENS.LPAREN))return null;this.next();
+        let cond=this.parseExpr(PREC.LOWEST);
+        if(!this.expectPeek(TOKENS.RPAREN))return null;
+        if(!this.expectPeek(TOKENS.LBRACE))return null;
+        let cons=this.parseBlock(); let alt=null;
+        if(this.peekIs(TOKENS.ELSE)){this.next();if(!this.expectPeek(TOKENS.LBRACE))return null;alt=this.parseBlock();}
+        return {type:'IfExpression',condition:cond,consequence:cons,alternative:alt};
+    }
+    parseFn(){
+        if(!this.expectPeek(TOKENS.LPAREN))return null;
+        let params=this.parseParams();
+        if(!this.expectPeek(TOKENS.LBRACE))return null;
+        return {type:'FunctionLiteral',parameters:params,body:this.parseBlock()};
+    }
+    parseParams(){
+        let ids=[];if(this.peekIs(TOKENS.RPAREN)){this.next();return ids;}
+        this.next();ids.push(this.cur.literal);
+        while(this.peekIs(TOKENS.COMMA)){this.next();this.next();ids.push(this.cur.literal);}
+        this.expectPeek(TOKENS.RPAREN);return ids;
+    }
+    parseCall(fn){let args=this.parseCallArgs();return {type:'CallExpression',function:fn,arguments:args};}
+    parseCallArgs(){
+        let args=[];if(this.peekIs(TOKENS.RPAREN)){this.next();return args;}
+        this.next();args.push(this.parseExpr(PREC.LOWEST));
+        while(this.peekIs(TOKENS.COMMA)){this.next();this.next();args.push(this.parseExpr(PREC.LOWEST));}
+        this.expectPeek(TOKENS.RPAREN);return args;
+    }
+    parseWhile(){
+        if(!this.expectPeek(TOKENS.LPAREN))return null;this.next();
+        let cond=this.parseExpr(PREC.LOWEST);
+        if(!this.expectPeek(TOKENS.RPAREN))return null;
+        if(!this.expectPeek(TOKENS.LBRACE))return null;
+        return {type:'WhileExpression',condition:cond,body:this.parseBlock()};
+    }
+    parseFor(){
+        if(!this.expectPeek(TOKENS.LPAREN))return null;this.next();
+        let cond=this.parseExpr(PREC.LOWEST);
+        if(!this.expectPeek(TOKENS.RPAREN))return null;
+        if(!this.expectPeek(TOKENS.LBRACE))return null;
+        return {type:'ForExpression',condition:cond,body:this.parseBlock()};
+    }
+}
+
+// ============================================================================
+// RENDERIZADO
+// ============================================================================
+
+function nodeToString(n) {
+    if (!n) return '?';
+    switch (n.type) {
+        case 'IntegerLiteral': return String(n.value);
+        case 'Boolean': return String(n.value);
+        case 'Identifier': return n.value;
+        case 'PrefixExpression': return `(${n.operator}${nodeToString(n.right)})`;
+        case 'InfixExpression': return `(${nodeToString(n.left)} ${n.operator} ${nodeToString(n.right)})`;
+        case 'LetStatement': return `let ${n.name} = ${nodeToString(n.value)};`;
+        case 'ReturnStatement': return `return ${nodeToString(n.value)};`;
+        case 'IfExpression': return `if${nodeToString(n.condition)} ${nodeToString(n.consequence)}${n.alternative?' else '+nodeToString(n.alternative):''}`;
+        case 'BlockStatement': return n.statements.map(nodeToString).join('');
+        case 'FunctionLiteral': return `function(${n.parameters.join(', ')}) ${nodeToString(n.body)}`;
+        case 'CallExpression': return `${nodeToString(n.function)}(${n.arguments.map(nodeToString).join(', ')})`;
+        case 'WhileExpression': return `while${nodeToString(n.condition)} ${nodeToString(n.body)}`;
+        case 'ForExpression': return `for${nodeToString(n.condition)} ${nodeToString(n.body)}`;
+        case 'Program': return n.statements.map(nodeToString).join('\n');
+        default: return '?';
+    }
+}
+
+function getNodeClass(n) {
+    if (!n) return 'node-op';
+    switch (n.type) {
+        case 'IntegerLiteral': return 'node-int';
+        case 'Boolean': return 'node-bool';
+        case 'Identifier': return 'node-ident';
+        case 'PrefixExpression': case 'InfixExpression': return 'node-op';
+        case 'LetStatement': case 'ReturnStatement': case 'Program': case 'BlockStatement': return 'node-stmt';
+        case 'FunctionLiteral': case 'CallExpression': case 'IfExpression':
+        case 'WhileExpression': case 'ForExpression': return 'node-fn';
+        default: return 'node-op';
+    }
+}
+
+function getNodeLabel(n) {
+    switch (n.type) {
+        case 'IntegerLiteral': return 'Entero';
+        case 'Boolean': return 'Booleano';
+        case 'Identifier': return 'Identificador';
+        case 'PrefixExpression': return 'Prefijo';
+        case 'InfixExpression': return 'Infijo';
+        case 'LetStatement': return 'Sentencia Let';
+        case 'ReturnStatement': return 'Sentencia Return';
+        case 'IfExpression': return 'If';
+        case 'BlockStatement': return 'Bloque { }';
+        case 'FunctionLiteral': return 'Función';
+        case 'CallExpression': return 'Llamada';
+        case 'WhileExpression': return 'While';
+        case 'ForExpression': return 'For';
+        case 'Program': return 'Programa';
+        default: return n.type;
+    }
+}
+
+function getNodeDisplay(n) {
+    switch (n.type) {
+        case 'IntegerLiteral': return String(n.value);
+        case 'Boolean': return String(n.value);
+        case 'Identifier': return n.value;
+        case 'PrefixExpression': return n.operator;
+        case 'InfixExpression': return n.operator;
+        case 'LetStatement': return `let ${n.name} =`;
+        case 'ReturnStatement': return 'return';
+        case 'IfExpression': return 'if';
+        case 'BlockStatement': return '{ ... }';
+        case 'FunctionLiteral': return `fn(${n.parameters.join(',')})`;
+        case 'CallExpression': return 'call';
+        case 'WhileExpression': return 'while';
+        case 'ForExpression': return 'for';
+        case 'Program': return 'Program';
+        default: return '?';
+    }
+}
+
+function getChildren(n) {
+    if (!n) return [];
+    switch (n.type) {
+        case 'IntegerLiteral': case 'Boolean': case 'Identifier': return [];
+        case 'PrefixExpression': return [{label:'right', node:n.right}];
+        case 'InfixExpression': return [{label:'left',node:n.left},{label:'right',node:n.right}];
+        case 'LetStatement': return n.value ? [{label:'valor',node:n.value}] : [];
+        case 'ReturnStatement': return n.value ? [{label:'valor',node:n.value}] : [];
+        case 'IfExpression':
+            let c = [{label:'condición',node:n.condition},{label:'then',node:n.consequence}];
+            if (n.alternative) c.push({label:'else',node:n.alternative});
+            return c;
+        case 'BlockStatement': return n.statements.map((s,i) => ({label:`stmt ${i+1}`,node:s}));
+        case 'FunctionLiteral': return [{label:'cuerpo',node:n.body}];
+        case 'CallExpression':
+            let a = [{label:'función',node:n.function}];
+            n.arguments.forEach((arg,i) => a.push({label:`arg${i+1}`,node:arg}));
+            return a;
+        case 'WhileExpression': return [{label:'condición',node:n.condition},{label:'cuerpo',node:n.body}];
+        case 'ForExpression': return [{label:'condición',node:n.condition},{label:'cuerpo',node:n.body}];
+        case 'Program': return n.statements.map((s,i) => ({label:`stmt ${i+1}`,node:s}));
+        default: return [];
+    }
+}
+
+function renderTree(node) {
+    if (!node) return '<span style="color:var(--muted)">null</span>';
+    let cls = getNodeClass(node);
+    let children = getChildren(node);
+
+    let html = `<div class="tree-node ${cls}">`;
+    html += `<div class="node-label">${getNodeLabel(node)}</div>`;
+    html += `<div class="node-box">${getNodeDisplay(node)}</div>`;
+
+    if (children.length > 0) {
+        let singleClass = children.length === 1 ? ' single' : '';
+        html += `<div class="children${singleClass}">`;
+        for (let child of children) {
+            html += renderTree(child.node);
+        }
+        html += '</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+function tokenColor(type) {
+    if ([TOKENS.LET,TOKENS.FUNCTION,TOKENS.IF,TOKENS.ELSE,TOKENS.RETURN,TOKENS.WHILE,TOKENS.FOR,TOKENS.BREAK].includes(type))
+        return 'background:rgba(56,189,248,0.15);color:var(--primary);border:1px solid rgba(56,189,248,0.3);';
+    if (type===TOKENS.INT) return 'background:rgba(34,197,94,0.15);color:var(--node-int);border:1px solid rgba(34,197,94,0.3);';
+    if (type===TOKENS.IDENT) return 'background:rgba(167,139,250,0.15);color:var(--node-ident);border:1px solid rgba(167,139,250,0.3);';
+    if (type===TOKENS.TRUE||type===TOKENS.FALSE) return 'background:rgba(234,179,8,0.15);color:var(--node-bool);border:1px solid rgba(234,179,8,0.3);';
+    return 'background:rgba(244,114,182,0.1);color:var(--node-op);border:1px solid rgba(244,114,182,0.2);';
+}
+
+function run() {
+    let input = document.getElementById('codeInput').value.trim();
+    if (!input) return;
+
+    // Tokens
+    let lex1 = new Lexer(input);
+    let tokens = [];
+    let t;
+    while ((t = lex1.nextToken()).type !== TOKENS.EOF) tokens.push(t);
+    let tokHtml = tokens.map(tk =>
+        `<span class="token-chip" style="${tokenColor(tk.type)}"><span class="tok-type">${tk.type}</span>${tk.literal}</span>`
+    ).join('');
+    document.getElementById('tokenOutput').innerHTML = tokHtml;
+
+    // Parse
+    let lex2 = new Lexer(input);
+    let parser = new Parser(lex2);
+    let ast = parser.parseProgram();
+
+    if (parser.errors.length > 0) {
+        document.getElementById('errorMsg').textContent = '❌ ' + parser.errors.join(' | ');
+        document.getElementById('treeOutput').innerHTML = '<span style="color:var(--accent)">Error de parseo</span>';
+        document.getElementById('stringOutput').innerHTML = '<span style="color:var(--accent)">—</span>';
+        return;
+    }
+    document.getElementById('errorMsg').textContent = '';
+
+    // String output
+    document.getElementById('stringOutput').innerHTML = nodeToString(ast);
+
+    // Tree
+    document.getElementById('treeOutput').innerHTML = renderTree(ast);
+}
+
+function setExample(code) {
+    document.getElementById('codeInput').value = code;
+    run();
+}
+
+// Enter key
+document.getElementById('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') run(); });
+</script>
+</body>
+</html>
