@@ -1,0 +1,15 @@
+let sumar = function(a, b) {
+  return a + b;
+};
+
+let multiplicar = function(x, y) {
+  return x * y;
+};
+
+let calcular = function(a, b, c) {
+  let temp = sumar(a, b);
+  return multiplicar(temp, c);
+};
+
+let resultado = calcular(5, 3, 2);
+resultado;
