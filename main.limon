@@ -1,15 +1,45 @@
-let sumar = function(a, b) {
-  return a + b;
+let factorial = function(n) {
+  if (n == 0) {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
 };
 
-let multiplicar = function(x, y) {
-  return x * y;
+let fibonacci = function(n) {
+  if (n < 2) {
+    return n;
+  } else {
+    return fibonacci(n - 1) + fibonacci(n - 2);
+  }
 };
 
-let calcular = function(a, b, c) {
-  let temp = sumar(a, b);
-  return multiplicar(temp, c);
+let sumarPares = function(limite) {
+  let suma = 0;
+  let i = 0;
+  for (i < limite) {
+    if (i == (i / 2) * 2) {
+      let suma = suma + i;
+    }
+    let i = i + 1;
+  }
+  return suma;
 };
 
-let resultado = calcular(5, 3, 2);
-resultado;
+let cuentaRegresiva = function(inicio) {
+  let actual = inicio;
+  while (actual > 0) {
+    let actual = actual - 1;
+  }
+  return actual;
+};
+
+let fact = factorial(5);
+let fib = fibonacci(6);
+let pares = sumarPares(10);
+let regresiva = cuentaRegresiva(5);
+
+fib;
+pares;
+regresiva;
+fact;
