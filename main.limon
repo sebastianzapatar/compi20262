@@ -39,7 +39,14 @@ let fib = fibonacci(6);
 let pares = sumarPares(10);
 let regresiva = cuentaRegresiva(5);
 
+let pot = 2 ** 3;
+let men = 10 <= 10;
+let may = 10 >= 9;
+
 fib;
 pares;
 regresiva;
+pot;
+men;
+may;
 fact;

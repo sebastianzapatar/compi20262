@@ -12,6 +12,7 @@ import (
 	"compigo/ast"
 	"compigo/object"
 	"fmt"
+	"math"
 )
 
 // Constantes reutilizables para evitar crear objetos nuevos cada vez
@@ -227,6 +228,13 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 		return nativeBoolToBooleanObject(leftVal < rightVal)
 	case ">":
 		return nativeBoolToBooleanObject(leftVal > rightVal)
+	case "<=":
+		return nativeBoolToBooleanObject(leftVal <= rightVal)
+	case ">=":
+		return nativeBoolToBooleanObject(leftVal >= rightVal)
+	case "**":
+		res := int64(math.Pow(float64(leftVal), float64(rightVal)))
+		return &object.Integer{Value: res}
 	case "==":
 		return nativeBoolToBooleanObject(leftVal == rightVal)
 	case "!=":
