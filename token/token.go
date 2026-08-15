@@ -25,9 +25,13 @@ const (
 
 	LT = "<"
 	GT = ">"
+	LTE = "<="
+	GTE = ">="
 
 	EQ     = "=="
 	NOT_EQ = "!="
+	
+	POW    = "**"
 
 	// Delimiters
 	COMMA     = ","
