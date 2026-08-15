@@ -207,8 +207,43 @@
         <div class="node" style="background: var(--primary);">Resultado Final: Integer(8)</div>
     </div>
 
-    <!-- ======================= SECTION 4: ¿CÓMO SE CORRE? ======================= -->
-    <h2>4. ¿Cómo Correr CatCompiler?</h2>
+    <!-- ======================= SECTION 4: ANATOMÍA DE EVAL ======================= -->
+    <h2>4. Las Entrañas de <code>Eval()</code> (El Código en Go)</h2>
+    <p>¿Qué tiene el archivo <code>evaluator/evaluator.go</code> por dentro? Su estructura principal es una instrucción <code>switch</code> gigante que recibe cualquier Nodo y decide qué hacer con él.</p>
+
+    <div class="card glass">
+        <h3>La Función Principal</h3>
+        <div class="code-block"><pre><code class="language-go">func Eval(node ast.Node, env *object.Environment) object.Object {
+    switch node := node.(type) {
+    
+    // Si es un número (ej. 5)
+    case *ast.IntegerLiteral:
+        return &object.Integer{Value: node.Value}
+        
+    // Si es una suma o multiplicación (ej. 5 + 3)
+    case *ast.InfixExpression:
+        left := Eval(node.Left, env)   // Recursividad
+        right := Eval(node.Right, env) // Recursividad
+        return evalInfixExpression(node.Operator, left, right)
+        
+    // Si es la declaración de una función
+    case *ast.FunctionLiteral:
+        // ¡Magia de Closures! Guardamos el Environment actual dentro de la función.
+        return &object.Function{Parameters: node.Parameters, Body: node.Body, Env: env}
+        
+    // ...
+    }
+}</code></pre></div>
+    </div>
+
+    <div class="card card-accent" style="border-left: 4px solid var(--accent);">
+        <h3>🧙‍♂️ El Secreto de las Funciones y el Return</h3>
+        <p><strong>1. Closures:</strong> Cuando el Evaluador crea una función, empaqueta su código <em>junto con el Environment donde nació</em>. Por eso, si defines una función dentro de otra, la de adentro puede "recordar" las variables de la de afuera.</p>
+        <p><strong>2. Desenrollando el Return:</strong> Cuando encuentra un <code>return</code>, el evaluador envuelve el valor en un objeto especial llamado <code>ReturnValue</code>. Esto le indica a los bloques superiores que <em>dejen de ejecutar más código</em> y pasen ese valor hasta la raíz del programa, donde finalmente se desenvuelve.</p>
+    </div>
+
+    <!-- ======================= SECTION 5: ¿CÓMO SE CORRE? ======================= -->
+    <h2>5. ¿Cómo Correr CatCompiler?</h2>
     <p>CatCompiler tiene <strong>dos formas</strong> de ejecutarse: de forma interactiva (REPL) o leyendo un archivo completo.</p>
 
     <div class="grid-2">
