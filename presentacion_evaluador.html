@@ -11,12 +11,12 @@
         :root {
             --bg-dark: #0f172a;
             --bg-card: #1e293b;
-            --primary: #f59e0b;     /* Naranja vibrante para el Evaluador */
+            --primary: #f59e0b;     
             --primary-light: rgba(245, 158, 11, 0.15);
-            --accent: #10b981;      /* Verde esmeralda */
+            --accent: #10b981;      
             --accent-light: rgba(16, 185, 129, 0.15);
-            --info: #3b82f6;        /* Azul */
-            --danger: #ef4444;      /* Rojo */
+            --info: #3b82f6;        
+            --danger: #ef4444;      
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-subtle: rgba(255, 255, 255, 0.08);
@@ -25,245 +25,246 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            line-height: 1.8;
-            font-size: 16px;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); line-height: 1.8; font-size: 16px; }
 
         .container { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
         
-        /* Typography */
         header { text-align: center; margin-bottom: 5rem; }
         h1 { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; line-height: 1.2; }
-        h2 { font-size: 2.2rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 0.5rem; margin: 4rem 0 1.5rem; }
-        h3 { font-size: 1.4rem; margin: 2rem 0 1rem; color: #fff; }
-        p { margin-bottom: 1.2rem; color: var(--text-muted); font-size: 1.05rem; }
+        h2 { font-size: 2.2rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 0.5rem; margin: 5rem 0 2rem; }
+        h3 { font-size: 1.5rem; margin: 2rem 0 1rem; color: #fff; }
+        h4 { font-size: 1.2rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
+        p { margin-bottom: 1.2rem; color: var(--text-muted); font-size: 1.1rem; }
         strong { color: #fff; font-weight: 600; }
         
-        /* Layouts */
-        .card { background: var(--bg-card); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--border-subtle); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .card { background: var(--bg-card); border-radius: 12px; padding: 2.5rem; margin-bottom: 2.5rem; border: 1px solid var(--border-subtle); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         
-        /* Code Blocks */
         .code-block { background: #0d1117; border-radius: 10px; overflow: hidden; margin: 1.5rem 0; border: 1px solid rgba(255,255,255,0.05); }
         pre { padding: 1.2rem 1.5rem; font-family: var(--font-mono); font-size: 0.95rem; overflow-x: auto; line-height: 1.6; }
         code.inline { background: rgba(255,255,255,0.1); color: var(--accent); padding: 0.2rem 0.4rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.9em; }
         
-        /* Callouts */
-        .callout { padding: 1.5rem; border-radius: 10px; margin: 2rem 0; border-left: 4px solid; }
-        .callout-info { background: rgba(59, 130, 246, 0.1); border-left-color: var(--info); }
+        .callout { padding: 2rem; border-radius: 10px; margin: 2rem 0; border-left: 5px solid; }
+        .callout-info { background: rgba(59, 130, 246, 0.08); border-left-color: var(--info); }
         .callout-warning { background: var(--primary-light); border-left-color: var(--primary); }
         .callout-success { background: var(--accent-light); border-left-color: var(--accent); }
         
-        /* Badges */
-        .badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; }
+        .badge { display: inline-block; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 1px; }
         .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--info); }
         .badge-accent { background: rgba(16, 185, 129, 0.2); color: var(--accent); }
         .badge-primary { background: rgba(245, 158, 11, 0.2); color: var(--primary); }
 
-        /* Diagrams */
         .tree-traversal { display: flex; flex-direction: column; align-items: center; gap: 0.8rem; background: #0d1117; padding: 2.5rem; border-radius: 12px; margin: 2rem 0; border: 1px solid var(--border-subtle); }
         .node { background: var(--info); color: white; padding: 0.8rem 1.8rem; border-radius: 8px; font-weight: 600; font-family: var(--font-mono); font-size: 0.95rem; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2); text-align: center; }
         .node-leaf { background: var(--accent); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
         .node-result { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); font-size: 1.1rem; }
         .arrow { color: var(--text-muted); font-size: 1.2rem; }
 
-        /* Tables */
         table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
         th { text-align: left; padding: 1rem; background: rgba(255,255,255,0.03); color: var(--primary); border-bottom: 2px solid var(--border-subtle); }
-        td { padding: 1rem; border-bottom: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.9rem; }
+        td { padding: 1rem; border-bottom: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.95rem; }
         
-        .concept-number { display: inline-flex; justify-content: center; align-items: center; width: 32px; height: 32px; background: var(--primary); color: black; border-radius: 50%; font-weight: bold; margin-right: 10px; font-size: 1rem; }
+        .concept-number { display: inline-flex; justify-content: center; align-items: center; width: 40px; height: 40px; background: var(--primary); color: black; border-radius: 50%; font-weight: 800; margin-right: 15px; font-size: 1.2rem; box-shadow: 0 0 15px rgba(245,158,11,0.4); }
+        
+        .analogy-box { background: rgba(255,255,255,0.02); border: 1px dashed var(--text-muted); padding: 1.5rem; border-radius: 8px; font-style: italic; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div style="font-size: 4rem; margin-bottom: 1rem;">⚡</div>
-        <h1>Construyendo el Evaluador</h1>
-        <p style="font-size: 1.25rem; max-width: 800px; margin: 0 auto;">La guía definitiva para entender cómo un lenguaje de programación cobra vida. Explicación profunda de Objetos, Closures, Scopes y Recursividad en Go.</p>
+        <div style="font-size: 4.5rem; margin-bottom: 1rem; text-shadow: 0 0 30px rgba(245,158,11,0.5);">⚡</div>
+        <h1>Comprendiendo el Evaluador</h1>
+        <p style="font-size: 1.25rem; max-width: 800px; margin: 0 auto;">Una inmersión profunda al corazón de CatCompiler. Desde cómo la memoria (Environment) actúa como hojas de acetato transparente, hasta cómo los Closures cargan "mochilas" de variables en el tiempo.</p>
     </header>
 
     <div class="callout callout-warning">
         <h3 style="margin-top: 0; color: var(--primary);">🎯 ¿Cuál es la misión del Evaluador?</h3>
-        <p>Hasta ahora, el <strong>Lexer</strong> convirtió el texto en Tokens, y el <strong>Parser</strong> organizó esos Tokens en un Árbol (AST). Pero el AST es solo una estructura de datos inerte. Es un mapa, no el viaje.</p>
-        <p>El <strong>Evaluador</strong> (o Intérprete <em>Tree-Walking</em>) es el motor que lee ese árbol, nodo por nodo, y le dice al procesador de tu computadora qué hacer: sumar números reales, asignar memoria real, e imprimir resultados reales.</p>
+        <p>Hasta ahora, el <strong>Lexer</strong> convirtió el texto en Tokens, y el <strong>Parser</strong> organizó esos Tokens en un Árbol (AST). Pero el AST es solo una estructura de datos inerte. Es el plano de una casa, no la casa en sí.</p>
+        <p>El <strong>Evaluador</strong> (Intérprete <em>Tree-Walking</em>) es el obrero que lee ese plano, nodo por nodo, y le dice al procesador de tu computadora qué hacer: sumar números, asignar memoria, e imprimir resultados. Transforma la <em>sintaxis abstracta</em> en <em>semántica viva</em>.</p>
     </div>
 
     <!-- ======================= SECTION 1 ======================= -->
     <h2><span class="concept-number">1</span> El Sistema de Objetos (Memoria Real)</h2>
-    <p>Antes de poder evaluar algo, necesitamos definir <strong>cómo se representan los valores en memoria</strong> durante la ejecución del programa. El AST tiene <code>ast.IntegerLiteral</code>, pero eso es solo la representación sintáctica del código fuente. Cuando el programa corre, necesita un valor real.</p>
+    <p>Antes de poder sumar o comparar, necesitamos definir <strong>cómo se representan los valores en la RAM de la computadora</strong> durante la ejecución. El AST tiene el nodo <code class="inline">ast.IntegerLiteral</code>, pero eso es solo sintaxis. Cuando el programa corre, necesita un "Objeto" que pueda manipularse, sumarse y pasarse a funciones.</p>
     
     <div class="card">
         <h3>La Interfaz <code>Object</code></h3>
-        <p>En Go, obligamos a que todos los valores de CatCompiler (números, booleanos, funciones) cumplan con una interfaz fundamental:</p>
+        <p>En el archivo <code>object/object.go</code> definimos una interfaz que <strong>TODO</strong> valor en CatCompiler debe cumplir para existir en memoria. Debe saber qué tipo es, y debe saber cómo imprimirse a sí mismo.</p>
         <div class="code-block"><pre><code class="language-go">type ObjectType string
 
 type Object interface {
-    Type() ObjectType  // Ejemplo: devuelve "INTEGER"
-    Inspect() string   // Ejemplo: devuelve "42" para imprimir en consola
+    Type() ObjectType  // Devuelve la etiqueta, ej: "INTEGER"
+    Inspect() string   // Lo que se muestra en consola, ej: "42"
 }</code></pre></div>
     </div>
 
     <div class="grid-3">
         <div class="card" style="padding: 1.5rem;">
             <span class="badge badge-info">Integer</span>
-            <p>Envuelve un número de Go en nuestra propia estructura para manejarlo con seguridad.</p>
+            <p>Envuelve el tipo primitivo <code>int64</code> de Go dentro de nuestra propia estructura.</p>
             <pre style="padding:0; background:transparent;"><code class="language-go" style="padding:0;">type Integer struct {
     Value int64
 }</code></pre>
         </div>
         <div class="card" style="padding: 1.5rem;">
             <span class="badge badge-accent">Boolean</span>
-            <p>Usamos un patrón <em>Singleton</em>: solo creamos <code>TRUE</code> y <code>FALSE</code> una vez en memoria para optimizar.</p>
+            <p><strong>Truco de optimización:</strong> Solo creamos <code>TRUE</code> y <code>FALSE</code> una única vez en todo el sistema y reciclamos esos punteros.</p>
             <pre style="padding:0; background:transparent;"><code class="language-go" style="padding:0;">type Boolean struct {
     Value bool
 }</code></pre>
         </div>
         <div class="card" style="padding: 1.5rem;">
-            <span class="badge badge-primary">Null</span>
-            <p>Representa la ausencia de valor (útil cuando una función no retorna nada).</p>
-            <pre style="padding:0; background:transparent;"><code class="language-go" style="padding:0;">type Null struct{}</code></pre>
+            <span class="badge badge-primary">Function</span>
+            <p>¡Una función es un objeto más! Se puede guardar en variables y devolver.</p>
+            <pre style="padding:0; background:transparent;"><code class="language-go" style="padding:0;">type Function struct {
+    Parameters []*ast.Identifier
+    Body       *ast.BlockStatement
+    Env        *Environment
+}</code></pre>
         </div>
     </div>
 
     <!-- ======================= SECTION 2 ======================= -->
     <h2><span class="concept-number">2</span> La Función Gigante: <code>Eval()</code></h2>
-    <p>El núcleo de todo el evaluador es una sola función recursiva escrita en <code>evaluator.go</code>. Su trabajo es recibir cualquier Nodo del AST y devolver un <code>object.Object</code>.</p>
+    <p>El núcleo del evaluador es <strong>una sola función recursiva</strong> escrita en <code>evaluator.go</code>. Usa un <em>Switch Type</em> inmenso para saber en qué tipo de nodo del AST estamos parados y decidir qué hacer con él.</p>
 
     <div class="card">
-        <h3>El Switch Case Maestro</h3>
-        <p>La función <code>Eval</code> usa un <code>switch</code> basado en el tipo de Nodo que está leyendo (Type Assertion de Go).</p>
+        <h3>El Switch Maestro</h3>
         <div class="code-block"><pre><code class="language-go">func Eval(node ast.Node, env *object.Environment) object.Object {
     switch node := node.(type) {
     
-    // 1. Si es un número pelado, lo convertimos a Objeto
+    // 1. ¿Es un número pelado en el AST? Lo convertimos a Objeto de Memoria
     case *ast.IntegerLiteral:
         return &object.Integer{Value: node.Value}
         
-    // 2. Si es una suma (ej. 5 + 3)
+    // 2. ¿Es una Operación Binaria? (ej. 5 + 3)
     case *ast.InfixExpression:
-        left := Eval(node.Left, env)   // Recursividad: evalúa el 5
-        right := Eval(node.Right, env) // Recursividad: evalúa el 3
+        // ¡LA RECURSIVIDAD EN ACCIÓN!
+        left := Eval(node.Left, env)   // Baja y resuelve el 5
+        right := Eval(node.Right, env) // Baja y resuelve el 3
+        
+        // Ahora que tenemos los objetos evaluados, los sumamos en Go
         return evalInfixExpression(node.Operator, left, right)
         
-    // 3. Si es un IF
-    case *ast.IfExpression:
-        return evalIfExpression(node, env)
+    // 3. ¿Es una declaración Let? (ej. let x = 5)
+    case *ast.LetStatement:
+        val := Eval(node.Value, env)   // Evalúa lo que está a la derecha del =
+        env.Set(node.Name.Value, val)  // Lo guarda en la memoria
         
-    // ... y así con cada tipo de nodo
+    // ... y así con cada nodo del lenguaje
     }
     return nil
 }</code></pre></div>
     </div>
 
-    <div class="callout callout-success">
-        <h3>🔍 Anatomía de la Evaluación (Recursividad)</h3>
-        <p>Para evaluar <code>5 + (10 * 2)</code>, el Evaluador desciende por las ramas del árbol hasta encontrar valores literales, y luego sube combinándolos.</p>
-        <div class="tree-traversal">
-            <div class="node">Eval( InfixExpression: "+" )</div>
-            <div class="arrow">↓ Llama a evaluar la Izquierda</div>
-            <div class="node node-leaf">Eval( IntegerLiteral: 5 ) 👉 Retorna Integer(5)</div>
-            <div class="arrow">↓ Llama a evaluar la Derecha</div>
-            <div class="node">Eval( InfixExpression: "*" )</div>
-            <div class="node node-leaf" style="margin-top: 10px;">Eval( 10 ) 👉 Retorna Integer(10)</div>
-            <div class="node node-leaf">Eval( 2 ) 👉 Retorna Integer(2)</div>
-            <div class="arrow">↑ Sube multiplicando (10 * 2)</div>
-            <div class="node" style="background:var(--accent);">Retorna Integer(20)</div>
-            <div class="arrow">↑ Sube sumando (5 + 20)</div>
-            <div class="node node-result">Resultado Final: Integer(25)</div>
-        </div>
+    <div class="card glass">
+        <h3>🔬 Lupa: ¿Cómo suma exactamente <code>evalInfixExpression</code>?</h3>
+        <p>Cuando tenemos <code class="inline">left</code> y <code class="inline">right</code> listos, llamamos a un helper. Este helper extrae el número "real" de Go, lo suma, y vuelve a empaquetarlo en un Objeto para CatCompiler.</p>
+        <div class="code-block"><pre><code class="language-go">func evalIntegerInfixExpression(operator string, left, right object.Object) object.Object {
+    // 1. Extraemos los valores int64 primitivos de Go
+    leftVal := left.(*object.Integer).Value
+    rightVal := right.(*object.Integer).Value
+
+    // 2. Operamos y repaquetamos en el Objeto de CatCompiler
+    switch operator {
+    case "+":
+        return &object.Integer{Value: leftVal + rightVal}
+    case "*":
+        return &object.Integer{Value: leftVal * rightVal}
+    // ...
+    }
+}</code></pre></div>
     </div>
 
     <!-- ======================= SECTION 3 ======================= -->
     <h2><span class="concept-number">3</span> Environment (La Memoria y Variables)</h2>
-    <p>Si el código fuera solo matemáticas puras, no necesitaríamos memoria. Pero tenemos variables. Cuando ejecutamos <code class="inline">let edad = 20;</code>, ese <code class="inline">20</code> tiene que guardarse en algún lado.</p>
+    <p>Para poder recordar variables necesitamos un <strong>Environment</strong>. En programación, un <em>Environment</em> no es más que una tabla Hash (un diccionario o mapa) que vincula nombres de variables (Strings) con Valores en memoria (Objects).</p>
 
     <div class="grid-2">
         <div class="card">
-            <h3>¿Qué es el Entorno?</h3>
-            <p>Es un <strong>Mapa (Diccionario)</strong> que relaciona nombres (strings) con Valores (Objects).</p>
+            <h3>¿Cómo es en Código?</h3>
+            <p>Usamos un <code>map[string]Object</code> en Go. Cuando Evaluador lee <code class="inline">let edad = 20;</code> llama a <code>Set("edad", 20)</code>. Cuando luego encuentra la palabra <code class="inline">edad</code> en el código, llama a <code>Get("edad")</code>.</p>
             <div class="code-block"><pre><code class="language-go">type Environment struct {
     store map[string]Object
     outer *Environment
 }</code></pre></div>
-            <p>Cuando Eval encuentra <code class="inline">let x = 5;</code> llama a <code class="inline">env.Set("x", 5)</code>. Cuando encuentra <code class="inline">x + 2</code>, llama a <code class="inline">env.Get("x")</code>.</p>
         </div>
         <div class="card" style="border-top: 4px solid var(--primary);">
             <h3>El Puntero <code>outer</code> (Scopes)</h3>
-            <p>¿Qué pasa si declaramos una variable dentro de un <code>if</code>? No queremos sobreescribir las variables globales. Para esto, creamos un <strong>Environment "Hijo"</strong>.</p>
-            <p>Si el evaluador busca la variable "x" en el hijo y no la encuentra, sigue el puntero <code>outer</code> y la busca en el padre.</p>
+            <p>Imagina que declaras una variable dentro de un <code>if</code> o una función. ¡No queremos ensuciar el entorno global! Para ello creamos un Environment <strong>"Hijo"</strong>.</p>
+            <div class="analogy-box">
+                <p><strong>💡 La Analogía de las Hojas de Acetato:</strong></p>
+                <p>Imagina el Environment como hojas transparentes apiladas. Estás mirando desde arriba. Dibujas la variable "x" en la hoja superior (el scope local). Si buscas "x", la ves inmediatamente. Si buscas "y" y no está en la hoja superior, tu vista traspasa la hoja transparente y mira la hoja de abajo (el <code>outer</code> scope). Así hasta llegar a la hoja base (variables globales).</p>
+            </div>
         </div>
     </div>
 
     <!-- ======================= SECTION 4 ======================= -->
-    <h2><span class="concept-number">4</span> El Poder de las Funciones (Closures)</h2>
-    <p>Esta es la parte más compleja pero más hermosa de construir un intérprete. En CatCompiler, <strong>las funciones son objetos de primera clase</strong> (First-Class Citizens). Eso significa que se guardan en variables, se pasan como argumentos y se devuelven, igual que un número.</p>
+    <h2><span class="concept-number">4</span> Closures y Funciones: La Magia Pura</h2>
+    <p>Esta es la característica de diseño de lenguajes que divide a los principiantes de los expertos. En CatCompiler, <strong>las funciones pueden "recordar" variables</strong> de donde nacieron, incluso si se ejecutan en otro lugar o tiempo. Esto se llama <strong>Closure</strong>.</p>
 
     <div class="card">
-        <h3>1. Creación de la Función</h3>
-        <p>Cuando Evaluador encuentra <code class="inline">let sumar = function(a, b) { return a + b; }</code>, crea en la memoria un objeto de tipo <code>Function</code> que guarda 3 cosas:</p>
-        <ul style="margin-left: 2rem; margin-bottom: 1rem; color: var(--text-muted);">
-            <li><code>Parameters</code>: La lista <code>[a, b]</code></li>
-            <li><code>Body</code>: El código AST de las sumas.</li>
-            <li><code>Env</code>: <strong>El entorno EXACTO donde fue creada.</strong> Esto es lo que permite los <strong style="color:var(--accent);">Closures</strong> (funciones que "recuerdan" el contexto exterior aunque se ejecuten en otro lado).</li>
-        </ul>
+        <h3>La Mochila de Supervivencia 🎒</h3>
+        <p>Cuando el Evaluador encuentra la declaración de una función (<code class="inline">function(x){...}</code>), crea un Objeto Función. Lo fascinante es el campo <code>Env</code>: <strong>La función guarda un puntero exacto al Environment que existía en el milisegundo en que ella nació.</strong> Es como si armara una mochila con el estado del mundo para llevársela puesta.</p>
+        
+        <div class="code-block"><pre><code class="language-javascript">let crearContador = function() {
+    let cuenta = 0;
+    return function() { // ¡Esta función nace adentro!
+        let cuenta = cuenta + 1;
+        return cuenta;
+    };
+};
+
+let miContador = crearContador();
+miContador(); // Devuelve 1
+miContador(); // Devuelve 2  <-- ¡Recordó y modificó la 'cuenta' original!</code></pre></div>
     </div>
 
-    <div class="card">
-        <h3>2. Llamando a la Función (CallExpression)</h3>
-        <p>Cuando hacemos <code class="inline">sumar(5, 3)</code>, ocurre esta secuencia de eventos críticos en <code class="inline">applyFunction()</code>:</p>
-        <table style="margin-top: 1rem;">
-            <tr><th width="50px">Paso</th><th>¿Qué pasa en Go?</th></tr>
-            <tr><td>1</td><td>Se evalúan los argumentos <code>5</code> y <code>3</code> (pasan a ser Objetos).</td></tr>
-            <tr><td>2</td><td>Se crea un <strong>Nuevo Environment</strong> (hijo del Environment guardado en la función).</td></tr>
-            <tr><td>3</td><td>Se inyectan los parámetros al nuevo environment: <code>env.Set("a", 5)</code> y <code>env.Set("b", 3)</code>.</td></tr>
-            <tr><td>4</td><td>Se llama a <code>Eval()</code> pasándole el Cuerpo de la Función y este <strong>Nuevo Environment</strong>.</td></tr>
-            <tr><td>5</td><td>Al terminar, el Nuevo Environment se destruye, protegiendo las variables globales.</td></tr>
-        </table>
+    <div class="card glass" style="border-left: 4px solid var(--info);">
+        <h3>El Proceso de Llamar una Función (CallExpression)</h3>
+        <p>Cuando finalmente ejecutas <code class="inline">miContador()</code>, ocurren 5 pasos quirúrgicos en <code>applyFunction()</code>:</p>
+        <ol style="margin-left: 1.5rem; margin-top: 1rem;">
+            <li style="margin-bottom: 0.8rem;">Se evalúan los argumentos (si pasaste <code>(5, 3)</code>, se vuelven objetos).</li>
+            <li style="margin-bottom: 0.8rem;"><strong>Se fabrica una hoja de acetato nueva (Environment hijo).</strong> ¿Quién es el padre de esta hoja? ¡El entorno que la función traía en su mochila (el <code>outer</code>)!</li>
+            <li style="margin-bottom: 0.8rem;">Se inyectan los argumentos en esta hoja nueva. Si la función recibe <code>a</code> y <code>b</code>, se hace <code>Set("a", 5)</code> y <code>Set("b", 3)</code> en el hijo.</li>
+            <li style="margin-bottom: 0.8rem;">Se llama recursivamente a <code>Eval()</code> pasándole el Cuerpo de la Función y esta hoja nueva.</li>
+            <li style="margin-bottom: 0.8rem;">Al terminar el bloque, la hoja nueva (el entorno hijo) se descarta, y las variables globales quedan protegidas.</li>
+        </ol>
     </div>
 
     <!-- ======================= SECTION 5 ======================= -->
     <h2><span class="concept-number">5</span> El Truco del Return</h2>
-    <p>En Go o Java, cuando llamas a <code>return</code>, sales de la función actual. Pero en nuestro evaluador, <strong>todo</strong> el código es un gran ciclo for que procesa AST.</p>
-    <div class="code-block"><pre><code class="language-javascript">function(x) {
-  if (x > 5) {
-    return true; // ¡Debe detener todo!
-  }
-  return false; // Esto no debería ejecutarse si x > 5
-}</code></pre></div>
+    <p>En lenguajes compilados, un `return` manipula el registro del procesador para saltar a otra dirección de memoria. Pero nosotros estamos corriendo un ciclo for en Go leyendo árboles. ¿Cómo simulamos que la ejecución se detenga instantáneamente si estamos en medio de 5 bloques anidados?</p>
     
-    <div class="callout callout-info">
-        <p><strong>¿Cómo detener el AST?</strong> El evaluador envuelve el valor retornado en un <code>object.ReturnValue</code>. Cuando la función padre (ej: `evalBlockStatement`) ve que un nodo hijo devolvió un `ReturnValue`, deja de procesar la siguiente línea de código y propaga ese valor hacia arriba, rompiendo el ciclo exitosamente.</p>
-    </div>
-
-    <!-- ======================= SECTION 6 ======================= -->
-    <h2><span class="concept-number">6</span> Control de Flujo y Ciclos</h2>
-    <p>Tener estructuras de control en tu lenguaje no requiere magia profunda, ¡solo requiere usar las estructuras de control del lenguaje en el que lo estás construyendo (Go)!</p>
-
     <div class="grid-2">
         <div class="card">
-            <h3>Condicional <code>If</code></h3>
-            <p>1. Evalúa la condición.<br>2. Verifica si el objeto resultante es Verdadero (Truthy).<br>3. Si es verdadero, evalúa el AST de la consecuencia. Si no, el de la alternativa (else).</p>
+            <h3>El Problema</h3>
+            <div class="code-block"><pre><code class="language-javascript">if (true) {
+    if (true) {
+        return 100; // ¡Debe matar a todos los padres!
+    }
+    // ESTO NUNCA DEBERÍA EVALUARSE
+    let x = 50; 
+}</code></pre></div>
         </div>
         <div class="card">
-            <h3>Ciclo <code>While / For</code></h3>
-            <p>Usamos un ciclo <code>for {}</code> infinito en Go. En cada vuelta, evalúa la condición. Si es falsa, hacemos <code>break</code> de Go. Si es verdadera, evaluamos el cuerpo del AST.</p>
+            <h3>La Solución: El Objeto <code>ReturnValue</code></h3>
+            <p>El evaluador no hace saltos, en vez de eso "envuelve" el número `100` en un escudo llamado <code>object.ReturnValue</code>.</p>
+            <p>Cuando la función `evalBlockStatement` está ejecutando línea por línea y ve que el resultado de la línea anterior fue de tipo <code>ReturnValue</code>, <strong>rompe su propio ciclo for inmediatamente</strong> y pasa el escudo hacia el bloque superior, provocando un efecto dominó que desenreda el árbol instantáneamente.</p>
         </div>
     </div>
 
-    <div class="card" style="border-top: 4px solid var(--accent); background: #111827; margin-top: 3rem;">
-        <h3 style="color: var(--accent); margin-top: 0; text-align: center;">🚀 ¡Listos para Evaluar Código Real!</h3>
-        <p style="text-align: center; margin-bottom: 2rem;">Todo este esfuerzo se traduce en un motor capaz de resolver algoritmos reales. Puedes correr el intérprete pasando un archivo:</p>
+    <div class="card" style="border-top: 4px solid var(--accent); background: #111827; margin-top: 4rem; padding: 3rem; text-align: center;">
+        <h2 style="color: var(--accent); margin-top: 0; font-size: 2.5rem;">🎉 ¿Y ahora qué?</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 2rem;">Todo este esfuerzo magistral se traduce en un motor vivo. Si combinamos Objetos, Variables, Entornos e Ifs, podemos lograr Recursividad de forma natural sin programarla explícitamente.</p>
         
-        <div class="code-block" style="max-width: 800px; margin: 0 auto;"><pre><code class="language-bash">$ go run main.go main.limon
-🐾 Ejecutando main.limon...
-120</code></pre></div>
+        <p>Prueba correr un archivo <code>.limon</code> con algoritmos densos y mira cómo la máquina que acabas de construir respira y resuelve todo sola:</p>
+        
+        <div class="code-block" style="max-width: 600px; margin: 0 auto; text-align: left;"><pre><code class="language-bash" style="font-size: 1.1rem;">$ go run main.go fibonacci.limon
+🐾 Ejecutando fibonacci.limon...
+55</code></pre></div>
     </div>
 
 </div>
