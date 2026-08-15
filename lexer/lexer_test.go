@@ -31,6 +31,9 @@ for while
 
 10 == 10;
 10 != 9;
+10 <= 10;
+10 >= 9;
+2 ** 3;
 `
 
 	tests := []struct {
@@ -114,6 +117,18 @@ for while
 		{token.INT, "10"},
 		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
+		{token.SEMICOLON, ";"},
+		{token.INT, "10"},
+		{token.LTE, "<="},
+		{token.INT, "10"},
+		{token.SEMICOLON, ";"},
+		{token.INT, "10"},
+		{token.GTE, ">="},
+		{token.INT, "9"},
+		{token.SEMICOLON, ";"},
+		{token.INT, "2"},
+		{token.POW, "**"},
+		{token.INT, "3"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}

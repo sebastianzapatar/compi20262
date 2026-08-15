@@ -75,7 +75,8 @@ const (
 	SUM         // 4 - + y -
 	PRODUCT     // 5 - * y /
 	PREFIX      // 6 - -X o !X (operadores unarios)
-	CALL        // 7 - miFuncion(X) (llamadas a funciones, la más alta)
+	EXPONENT    // 7 - ** (potencia, máxima prioridad matemática)
+	CALL        // 8 - miFuncion(X) (llamadas a funciones, la más alta)
 )
 
 // precedences es el diccionario que asocia cada token-operador con su nivel
@@ -85,11 +86,14 @@ var precedences = map[token.TokenType]int{
 	token.NOT_EQ:   EQUALS,      // !=  → prioridad 2
 	token.LT:       LESSGREATER, // <   → prioridad 3
 	token.GT:       LESSGREATER, // >   → prioridad 3
+	token.LTE:      LESSGREATER, // <=  → prioridad 3
+	token.GTE:      LESSGREATER, // >=  → prioridad 3
 	token.PLUS:     SUM,         // +   → prioridad 4
 	token.MINUS:    SUM,         // -   → prioridad 4
 	token.SLASH:    PRODUCT,     // /   → prioridad 5
 	token.ASTERISK: PRODUCT,     // *   → prioridad 5
-	token.LPAREN:   CALL,        // (   → prioridad 7 (para llamadas a función)
+	token.POW:      EXPONENT,    // **  → prioridad 7
+	token.LPAREN:   CALL,        // (   → prioridad 8 (para llamadas a función)
 }
 
 // =============================================================================
@@ -191,6 +195,9 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)   // Desigualdad: x != y
 	p.registerInfix(token.LT, p.parseInfixExpression)       // Menor que: x < y
 	p.registerInfix(token.GT, p.parseInfixExpression)       // Mayor que: x > y
+	p.registerInfix(token.LTE, p.parseInfixExpression)      // Menor o igual: x <= y
+	p.registerInfix(token.GTE, p.parseInfixExpression)      // Mayor o igual: x >= y
+	p.registerInfix(token.POW, p.parseInfixExpression)      // Potencia: x ** y
 	p.registerInfix(token.LPAREN, p.parseCallExpression)    // Llamada: add(x, y)
 
 	// Leemos dos tokens para inicializar tanto curToken como peekToken.
