@@ -222,6 +222,7 @@
                 <hr class="nav-separator">
                 <li><a href="#repl">9. El REPL</a></li>
                 <li><a href="#modules">10. Estructura de Módulos</a></li>
+                <li><a href="#references">11. Referencias</a></li>
                 <hr class="nav-separator">
                 <li><a href="visualizador.html" style="color: var(--accent); font-weight: bold;">🌳 Visualizador AST Interactivo</a></li>
                 <li><a href="presentacion_evaluador.html" style="color: var(--primary); font-weight: bold;">⚡ Guía del Evaluador</a></li>
@@ -679,6 +680,34 @@ let x = (3 + (4 * 41));</code></pre></div>
                         <li><strong><code>evaluator/</code></strong> → Transforma <code>ast.Program</code> en <code>object</code>.</li>
                         <li><strong><code>repl/</code></strong> + <strong><code>main.go</code></strong> → Orquestan todo el flujo.</li>
                     </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SECCIÓN 11: REFERENCIAS ==================== -->
+        <section id="references" class="section">
+            <h2>11. Referencias y Bibliografía 📚</h2>
+            <p>La arquitectura de <strong>CatCompiler</strong> (Pratt Parsing + Tree-Walking Evaluator) está inspirada en literatura moderna y clásica sobre la construcción de intérpretes. Si quieres profundizar en la teoría, te recomendamos los siguientes recursos:</p>
+            
+            <div class="grid-2">
+                <div class="card glass">
+                    <h3 style="color: var(--primary); margin-top: 0;">Writing An Interpreter In Go</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Autor:</strong> Thorsten Ball</p>
+                    <p>El estándar de oro moderno para aprender a hacer intérpretes. Utiliza exactamente el mismo enfoque práctico que hemos construido aquí (Pratt Parsing en el lenguaje Go), sin abrumar con matemáticas pesadas.</p>
+                    <a href="https://interpreterbook.com/" target="_blank" style="color: var(--info); text-decoration: none; font-weight: bold; font-size: 0.9rem;">Ver libro oficial →</a>
+                </div>
+                
+                <div class="card glass">
+                    <h3 style="color: var(--accent); margin-top: 0;">Crafting Interpreters</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Autor:</strong> Robert Nystrom</p>
+                    <p>Una obra maestra (disponible gratis en web). Construye el lenguaje "Lox" usando dos enfoques: primero un Tree-Walking Interpreter en Java (similar a nosotros) y luego un compilador de Bytecode con Máquina Virtual en C.</p>
+                    <a href="https://craftinginterpreters.com/" target="_blank" style="color: var(--info); text-decoration: none; font-weight: bold; font-size: 0.9rem;">Leer gratis online →</a>
+                </div>
+
+                <div class="card glass" style="grid-column: 1 / -1;">
+                    <h3 style="margin-top: 0;">Engineering a Compiler (3rd Edition)</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);"><strong>Autores:</strong> Keith Cooper & Linda Torczon</p>
+                    <p>Si necesitas la teoría universitaria formal (Gramáticas Libres de Contexto, Autómatas, Análisis Semántico y Generación de Código Máquina), este es el libro de texto clásico definitivo.</p>
                 </div>
             </div>
         </section>
